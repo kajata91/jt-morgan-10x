@@ -5,193 +5,344 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JT Morgan 10X — 텐버</title>
 <style>
-  /* ============ MetaMint 문법의 다크 테마 ============ */
   :root {
-    --bg: #0b0d0c;          /* 페이지 배경 */
-    --card: #151817;        /* 카드 배경 */
-    --card2: #1c201e;       /* 카드 내 강조 영역 */
-    --line: #262b29;        /* 경계선 */
-    --text: #e8ece9;        /* 본문 */
-    --muted: #8a938e;       /* 보조 텍스트 */
-    --green: #4ade80;       /* 상승·포인트 */
-    --red: #f87171;         /* 하락·경고 */
-    --amber: #fbbf24;       /* 주의 */
+    --bg: #0a0c0b; --panel: #121514; --card: #161a18; --card2: #1d2220;
+    --line: #262b29; --text: #e8ece9; --muted: #8a938e;
+    --green: #4ade80; --green-dim: #166534; --red: #f87171; --amber: #fbbf24;
+    --radius: 16px;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: var(--bg); color: var(--text);
-    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-    padding: 20px; max-width: 1280px; margin: 0 auto;
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif; }
+  a { color:inherit; text-decoration:none; }
+
+  .app { display:flex; min-height:100vh; }
+
+  /* ===== 사이드바 ===== */
+  .sidebar { width:225px; flex-shrink:0; background:var(--panel); border-right:1px solid var(--line); padding:22px 16px; position:sticky; top:0; height:100vh; overflow-y:auto; }
+  .logo { display:flex; align-items:center; gap:10px; margin-bottom:26px; }
+  .logo .mark { width:38px; height:38px; border-radius:12px; background:linear-gradient(135deg,#14532d,#4ade80); display:flex; align-items:center; justify-content:center; font-weight:800; color:#06130b; }
+  .logo b { font-size:16px; display:block; }
+  .logo span { font-size:10px; color:var(--muted); }
+  .navtitle { font-size:10px; color:var(--muted); letter-spacing:.12em; margin:18px 8px 8px; }
+  .nav a { display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:10px; font-size:13px; color:var(--muted); margin-bottom:2px; }
+  .nav a:hover, .nav a.on { background:var(--card2); color:var(--text); }
+  .nav a .dot { width:6px; height:6px; border-radius:50%; background:var(--green); flex-shrink:0; }
+  .nav .newtag { margin-left:auto; background:var(--green); color:#06130b; font-size:9px; font-weight:700; padding:2px 6px; border-radius:10px; }
+  .side-note { margin-top:22px; padding:12px; background:var(--card); border:1px solid var(--line); border-radius:12px; font-size:11px; color:var(--muted); line-height:1.6; }
+  .side-note b { color:var(--green); }
+
+  /* ===== 메인 ===== */
+  .main { flex:1; padding:22px 26px; min-width:0; }
+  .topbar { display:flex; align-items:center; gap:14px; margin-bottom:18px; }
+  .topbar h1 { font-size:21px; font-weight:700; margin-right:auto; }
+  .search { display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:9px 14px; width:250px; color:var(--muted); font-size:13px; }
+  .avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#4ade80,#166534); display:flex; align-items:center; justify-content:center; font-weight:800; color:#06130b; }
+
+  /* ===== 티커 스트립 ===== */
+  .strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:16px; background:var(--card); }
+  .tick { padding:14px 16px; border-right:1px solid var(--line); }
+  .tick:last-child { border-right:none; }
+  .tick .n { font-size:11px; color:var(--muted); margin-bottom:4px; }
+  .tick .v { font-size:19px; font-weight:700; }
+  .tick .c { font-size:11px; margin-top:3px; }
+  .tick .note { font-size:10px; color:var(--muted); margin-top:2px; }
+  .up{color:var(--green)} .down{color:var(--red)} .warn{color:var(--amber)} .flat{color:var(--muted)}
+
+  .alert { background:rgba(251,191,36,.07); border:1px solid rgba(251,191,36,.3); color:#fde68a; border-radius:12px; padding:11px 15px; font-size:12.5px; line-height:1.6; margin-bottom:16px; }
+
+  /* ===== 카드 그리드 ===== */
+  .row { display:grid; gap:16px; margin-bottom:16px; }
+  .row.r3 { grid-template-columns:1fr 1.1fr 1.2fr; }
+  .row.r2 { grid-template-columns:1.6fr 1fr; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px; min-width:0; }
+  .card h2 { font-size:14px; font-weight:700; }
+  .card .desc { font-size:11px; color:var(--muted); margin:3px 0 14px; }
+  .fn { color:var(--muted); font-weight:400; font-size:11px; }
+
+  /* 온도계 게이지 */
+  .gaugewrap { display:flex; flex-direction:column; align-items:center; }
+  .gauge-label { text-align:center; margin-top:-58px; }
+  .gauge-label .big { font-size:26px; font-weight:800; color:var(--amber); }
+  .gauge-label .sm { font-size:11px; color:var(--muted); }
+  .zone-row { display:flex; justify-content:space-between; width:100%; font-size:10px; color:var(--muted); margin-top:14px; }
+  .zone-row .cur { color:var(--amber); font-weight:700; }
+  .rules { margin-top:12px; width:100%; }
+  .rules li { font-size:11.5px; color:var(--muted); line-height:1.7; list-style:none; padding-left:14px; position:relative; }
+  .rules li::before { content:"▸"; position:absolute; left:0; color:var(--green); }
+
+  /* 지수 카드 */
+  .bigval { font-size:30px; font-weight:800; }
+  .bigsub { font-size:13px; margin:4px 0 14px; }
+  .kv { display:flex; justify-content:space-between; font-size:12px; padding:7px 0; border-bottom:1px solid var(--line); }
+  .kv:last-child { border-bottom:none; }
+  .kv .k { color:var(--muted); }
+  .rangebar { display:flex; gap:2px; margin:12px 0 4px; height:26px; align-items:flex-end; }
+  .rangebar i { flex:1; border-radius:2px; }
+
+  /* 차트 */
+  .chart svg { width:100%; height:150px; }
+  .chart .axis { font-size:9px; fill:var(--muted); }
+  .chart .pt { fill:var(--green); }
+  .chartnote { font-size:10px; color:var(--muted); margin-top:6px; }
+
+  /* 분야별 노출 바 */
+  .bars .brow { display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:12px; }
+  .bars .bname { width:92px; color:var(--muted); flex-shrink:0; }
+  .bars .btrack { flex:1; height:8px; background:var(--card2); border-radius:6px; overflow:hidden; }
+  .bars .bfill { height:100%; background:linear-gradient(90deg,var(--green-dim),var(--green)); border-radius:6px; }
+  .bars .bval { width:70px; text-align:right; font-size:11px; color:var(--muted); flex-shrink:0; }
+
+  /* 주전 10 테이블 */
+  .tablewrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; min-width:680px; }
+  th { text-align:left; color:var(--muted); font-weight:500; font-size:10.5px; letter-spacing:.05em; padding:8px 10px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  td { padding:11px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  .stock { font-weight:700; white-space:nowrap; }
+  .stock .code { font-weight:400; font-size:10.5px; color:var(--muted); }
+  .num { font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:10.5px; font-weight:600; white-space:nowrap; }
+  .b-high { background:rgba(74,222,128,.12); color:var(--green); }
+  .b-mid { background:rgba(251,191,36,.12); color:var(--amber); }
+  .pgauge { width:100px; }
+  .pgauge .bar { height:6px; background:var(--card2); border-radius:6px; overflow:hidden; }
+  .pgauge .fill { height:100%; background:linear-gradient(90deg,var(--green-dim),var(--green)); }
+  .pgauge .lbl { font-size:9.5px; color:var(--muted); margin-top:3px; }
+
+  /* 후보/일지 */
+  .bench { list-style:none; }
+  .bench li { display:flex; justify-content:space-between; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); font-size:12.5px; }
+  .bench li:last-child { border-bottom:none; }
+  .bench .bn { font-weight:600; white-space:nowrap; }
+  .bench .bnote { color:var(--muted); font-size:11.5px; text-align:right; }
+  .journal .entry { padding:11px 0; border-bottom:1px solid var(--line); }
+  .journal .entry:last-child { border-bottom:none; }
+  .journal .jd { font-size:10.5px; color:var(--green); margin-bottom:3px; }
+  .journal .jt { font-size:13px; font-weight:700; margin-bottom:4px; }
+  .journal .jb { font-size:11.5px; color:var(--muted); line-height:1.65; }
+
+  footer { font-size:10.5px; color:var(--muted); line-height:1.7; padding:16px 4px 30px; border-top:1px solid var(--line); margin-top:6px; }
+
+  /* ===== 모바일 ===== */
+  @media (max-width: 920px) {
+    .sidebar { display:none; }
+    .main { padding:14px; }
+    .row.r3, .row.r2 { grid-template-columns:1fr; }
+    .search { display:none; }
+    .mobilebrand { display:flex !important; }
   }
-  a { color: inherit; text-decoration: none; }
-
-  /* ---- 헤더 ---- */
-  header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
-  .brand { display: flex; align-items: center; gap: 12px; }
-  .brand .logo {
-    width: 40px; height: 40px; border-radius: 12px;
-    background: linear-gradient(135deg, #14532d, #4ade80);
-    display: flex; align-items: center; justify-content: center; font-weight: 800; color: #06130b; font-size: 18px;
-  }
-  .brand h1 { font-size: 20px; font-weight: 700; }
-  .brand .sub { font-size: 12px; color: var(--muted); }
-  .version { text-align: right; font-size: 12px; color: var(--muted); }
-  .version b { color: var(--green); }
-
-  /* ---- 시세 스트립 (기능 5) ---- */
-  .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin-bottom: 14px; }
-  .strip .tick { padding: 14px 16px; background: var(--card); border-right: 1px solid var(--line); }
-  .strip .tick:last-child { border-right: none; }
-  .tick .n { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-  .tick .v { font-size: 20px; font-weight: 700; }
-  .tick .c { font-size: 12px; margin-top: 3px; }
-  .up { color: var(--green); } .down { color: var(--red); } .warn { color: var(--amber); } .flat { color: var(--muted); }
-
-  /* ---- 경고 배너 ---- */
-  .alert { background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.35); color: #fde68a; border-radius: 12px; padding: 12px 16px; font-size: 13px; line-height: 1.6; margin-bottom: 18px; }
-
-  /* ---- 카드 공통 ---- */
-  .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 14px; }
-  .card h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-  .card .desc { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
-
-  /* ---- 주전 10 테이블 (기능 1+9) ---- */
-  .tablewrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 640px; }
-  th { text-align: left; color: var(--muted); font-weight: 500; font-size: 11px; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  td { padding: 11px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  .stock { font-weight: 700; }
-  .stock .code { font-weight: 400; font-size: 11px; color: var(--muted); }
-  .sector { font-size: 11px; color: var(--muted); }
-  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .b-high { background: rgba(74,222,128,.12); color: var(--green); }
-  .b-mid  { background: rgba(251,191,36,.12); color: var(--amber); }
-  .thesis { font-size: 12px; color: var(--muted); max-width: 260px; }
-  /* 달성률 게이지 (기능 9) */
-  .gauge { width: 110px; }
-  .gauge .bar { height: 6px; background: var(--card2); border-radius: 6px; overflow: hidden; }
-  .gauge .fill { height: 100%; background: linear-gradient(90deg, #166534, var(--green)); border-radius: 6px; }
-  .gauge .lbl { font-size: 10px; color: var(--muted); margin-top: 4px; }
-
-  /* ---- 후보 10 ---- */
-  .bench { list-style: none; }
-  .bench li { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
-  .bench li:last-child { border-bottom: none; }
-  .bench .bn { font-weight: 600; white-space: nowrap; }
-  .bench .bnote { color: var(--muted); font-size: 12px; text-align: right; }
-
-  /* ---- 업무 일지 (기능 2) ---- */
-  .journal .entry { padding: 12px 0; border-bottom: 1px solid var(--line); }
-  .journal .entry:last-child { border-bottom: none; }
-  .journal .jd { font-size: 11px; color: var(--green); margin-bottom: 3px; }
-  .journal .jt { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-  .journal .jb { font-size: 12px; color: var(--muted); line-height: 1.6; }
-
-  footer { font-size: 11px; color: var(--muted); line-height: 1.7; padding: 16px 4px 30px; border-top: 1px solid var(--line); margin-top: 10px; }
-
-  /* ---- 모바일 (휴대폰) ---- */
-  @media (max-width: 820px) {
-    body { padding: 12px; }
-    .grid { grid-template-columns: 1fr; }
-    .brand h1 { font-size: 17px; }
-    .tick .v { font-size: 16px; }
-  }
+  .mobilebrand { display:none; align-items:center; gap:8px; margin-right:auto; }
+  .mobilebrand .mark { width:30px; height:30px; border-radius:9px; background:linear-gradient(135deg,#14532d,#4ade80); display:flex; align-items:center; justify-content:center; font-weight:800; color:#06130b; font-size:12px; }
 </style>
 </head>
 <body>
+<div class="app">
 
-<header>
-  <div class="brand">
-    <div class="logo">10X</div>
-    <div>
-      <h1>JT Morgan 10X</h1>
-      <div class="sub">텐버 (TENVER) — 텐배거 리서치 대시보드</div>
+  <!-- ===== 사이드바 ===== -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="mark">10X</div>
+      <div><b>JT Morgan 10X</b><span>텐버 (TENVER)</span></div>
     </div>
-  </div>
-  <div class="version" id="version"></div>
-</header>
+    <div class="navtitle">RESEARCH</div>
+    <nav class="nav">
+      <a href="#top" class="on"><span class="dot"></span>대시보드</a>
+      <a href="#main10">주전 10종목</a>
+      <a href="#bench10">후보 10종목</a>
+      <a href="#journal">텐버 업무 일지 <span class="newtag">NEW</span></a>
+    </nav>
+    <div class="navtitle">SYSTEM</div>
+    <nav class="nav">
+      <a href="#temp">시장 온도계</a>
+      <a href="https://github.com/kajata91/jt-morgan-10x" target="_blank">GitHub 저장소</a>
+    </nav>
+    <div class="side-note" id="sidenote"></div>
+  </aside>
 
-<div class="strip" id="strip"></div>
-<div class="alert" id="alert"></div>
+  <!-- ===== 메인 ===== -->
+  <main class="main" id="top">
+    <div class="topbar">
+      <div class="mobilebrand"><div class="mark">10X</div><b style="font-size:15px">JT Morgan 10X</b></div>
+      <h1>Dashboard</h1>
+      <div class="search">🔍 종목 검색 (준비 중)</div>
+      <div class="avatar">T</div>
+    </div>
 
-<div class="card">
-  <h2>주전 10종목 <span style="color:var(--muted);font-weight:400;font-size:12px">기능 1 · 9</span></h2>
-  <div class="desc">기준가(2026-07-01 종가) 대비 목표 10배 — ★는 기준가 확정 대기 · 게이지는 목표가 대비 달성률</div>
-  <div class="tablewrap">
-    <table>
-      <thead>
-        <tr><th>종목</th><th>분야</th><th>기준가</th><th>현재가</th><th>목표가 (10배)</th><th>달성률</th><th>확신도</th><th>핵심 논거</th></tr>
-      </thead>
-      <tbody id="main10"></tbody>
-    </table>
-  </div>
+    <div class="strip" id="strip"></div>
+    <div class="alert" id="alert"></div>
+
+    <div class="row r3">
+      <div class="card" id="temp">
+        <h2>시장 온도계 <span class="fn">강령 모듈 0</span></h2>
+        <div class="desc" id="tempdate"></div>
+        <div class="gaugewrap">
+          <svg viewBox="0 0 200 120" width="200" height="120">
+            <path d="M 20 105 A 85 85 0 0 1 180 105" fill="none" stroke="#1d2220" stroke-width="14" stroke-linecap="round"/>
+            <path id="garc" d="M 20 105 A 85 85 0 0 1 180 105" fill="none" stroke="#fbbf24" stroke-width="14" stroke-linecap="round" stroke-dasharray="267" stroke-dashoffset="267"/>
+          </svg>
+          <div class="gauge-label">
+            <div class="big" id="templabel"></div>
+            <div class="sm" id="tempscore"></div>
+          </div>
+        </div>
+        <div class="zone-row" id="zones"></div>
+        <ul class="rules" id="temprules"></ul>
+        <div class="desc" style="margin-top:10px" id="tempsummary"></div>
+      </div>
+
+      <div class="card">
+        <h2>Stock exchange <span class="fn">기능 5</span></h2>
+        <div class="desc">KOSPI · 2026-07-02 종가</div>
+        <div class="bigval">7,648.09</div>
+        <div class="bigsub down">▼ 655.32 (-7.89%) — 8,000선 붕괴</div>
+        <div class="rangebar" id="rangebar"></div>
+        <div class="desc" style="margin-bottom:10px">연중 확인 범위: 7,477 (6/8 장중) ~ 9,000 (6월 중순 장중)</div>
+        <div class="kv"><span class="k">KOSDAQ 종가</span><span class="down">866.72 (-6.74%)</span></div>
+        <div class="kv"><span class="k">외국인 (연초 이후)</span><span class="down">-150.7조 순매도</span></div>
+        <div class="kv"><span class="k">개인 (7/2)</span><span class="up">+5.4조 순매수</span></div>
+        <div class="kv"><span class="k">이상 신호</span><span class="warn">사이드카 · 6월 CB 3회</span></div>
+      </div>
+
+      <div class="card chart">
+        <h2>KOSPI 추이 <span class="fn">확인 지점 연결</span></h2>
+        <div class="desc" id="chartnote"></div>
+        <svg id="chartsvg" viewBox="0 0 320 150" preserveAspectRatio="none"></svg>
+        <div class="chartnote">※ 텐버가 출처로 확인한 지점만 연결한 개략 추이입니다 (일별 전체 데이터 아님)</div>
+      </div>
+    </div>
+
+    <div class="row r2">
+      <div class="card" id="main10">
+        <h2>주전 10종목 <span class="fn">기능 1 · 9</span></h2>
+        <div class="desc">기준가(2026-07-01 종가) 대비 목표 10배 — ★는 기준가 확정 대기 · 게이지는 목표가 대비 달성률</div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>INSTRUMENT</th><th>분야</th><th>기준가</th><th>현재가</th><th>목표가</th><th>달성률</th><th>확신도</th></tr></thead>
+            <tbody id="main10body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h2>분야별 노출 <span class="fn">Strength meter</span></h2>
+        <div class="desc">주전 10종목의 섹터 분포 — 같은 테마 5종목 초과 금지 (강령 제2장 2조)</div>
+        <div class="bars" id="sectorbars"></div>
+        <div class="side-note" style="margin-top:14px" id="concnote"></div>
+      </div>
+    </div>
+
+    <div class="row r2">
+      <div class="card journal" id="journal">
+        <h2>텐버 업무 일지 <span class="fn">기능 2</span></h2>
+        <div class="desc">한 일 · 반성 · 다음 할 일</div>
+        <div id="journalbody"></div>
+      </div>
+      <div class="card" id="bench10">
+        <h2>후보 10종목 <span class="fn">기능 4</span></h2>
+        <div class="desc">주전 결원 시 승격 대기</div>
+        <ul class="bench" id="bench10body"></ul>
+      </div>
+    </div>
+
+    <footer id="disclaimer"></footer>
+  </main>
 </div>
-
-<div class="grid">
-  <div class="card">
-    <h2>텐버 업무 일지 <span style="color:var(--muted);font-weight:400;font-size:12px">기능 2</span></h2>
-    <div class="desc">한 일 · 반성 · 다음 할 일</div>
-    <div class="journal" id="journal"></div>
-  </div>
-  <div class="card">
-    <h2>후보 10종목 <span style="color:var(--muted);font-weight:400;font-size:12px">기능 4</span></h2>
-    <div class="desc">주전 결원 시 승격 대기</div>
-    <ul class="bench" id="bench10"></ul>
-  </div>
-</div>
-
-<footer id="disclaimer"></footer>
 
 <script src="data.js"></script>
 <script>
   const D = TENVER_DATA;
   const won = n => n == null ? "—" : n.toLocaleString("ko-KR") + "원";
 
-  // 버전 (기능 12)
-  document.getElementById("version").innerHTML =
-    `텐버 <b>${D.version}</b><br>최근 업데이트 ${D.updatedAt}<br><span style="font-size:11px">${D.updateNote}</span>`;
+  // 사이드바 노트 (기능 12: 버전)
+  document.getElementById("sidenote").innerHTML =
+    `텐버 <b>${D.version}</b><br>업데이트 ${D.updatedAt}<br><br>${D.updateNote}`;
 
-  // 시세 스트립 (기능 5)
+  // 티커 스트립
   document.getElementById("strip").innerHTML = D.market.map(m => `
-    <div class="tick">
-      <div class="n">${m.name}</div>
-      <div class="v">${m.value}</div>
-      <div class="c ${m.dir}">${m.change}</div>
-    </div>`).join("");
+    <div class="tick"><div class="n">${m.name}</div><div class="v">${m.value}</div>
+    <div class="c ${m.dir}">${m.change}</div><div class="note">${m.note}</div></div>`).join("");
 
-  // 경고 배너
   document.getElementById("alert").textContent = D.alert;
 
-  // 주전 10 (기능 1 + 달성률 게이지 기능 9)
-  document.getElementById("main10").innerHTML = D.main10.map(s => {
-    const pct = s.currentPrice ? Math.min(100, s.currentPrice / s.targetPrice * 100) : (s.basePrice / s.targetPrice * 100);
+  // ---- 온도계 게이지 ----
+  const T = D.temperature;
+  const arcLen = 267; // 반원 호 길이
+  document.getElementById("garc").style.strokeDashoffset = arcLen * (1 - T.score/100);
+  document.getElementById("templabel").textContent = T.label;
+  document.getElementById("tempscore").textContent = `${T.score} / 100`;
+  document.getElementById("tempdate").textContent = `${T.asOf} 측정 — 민스키 국면 판정`;
+  document.getElementById("zones").innerHTML = T.zones.map(z =>
+    `<span class="${z===T.label?'cur':''}">${z}</span>`).join("");
+  document.getElementById("temprules").innerHTML = T.rules.map(r => `<li>${r}</li>`).join("");
+  document.getElementById("tempsummary").textContent = T.summary;
+
+  // ---- 연중 레인지 바 (저점 7477 ~ 고점 9000, 현재 7648) ----
+  (() => {
+    const lo = 7477, hi = 9000, cur = 7648, n = 40;
+    let html = "";
+    for (let i = 0; i < n; i++) {
+      const v = lo + (hi - lo) * i / (n - 1);
+      const h = 8 + 18 * i / (n - 1);
+      const isCur = Math.abs(v - cur) < (hi - lo) / n;
+      const color = isCur ? "#4ade80" : (v < 7800 ? "#f87171" : v < 8400 ? "#fbbf24" : "#374440");
+      html += `<i style="height:${h}px;background:${color}"></i>`;
+    }
+    document.getElementById("rangebar").innerHTML = html;
+  })();
+
+  // ---- KOSPI 확인 지점 차트 ----
+  (() => {
+    const pts = D.kospiTrend.points;
+    const vals = pts.map(p => p.value);
+    const min = Math.min(...vals) - 200, max = Math.max(...vals) + 200;
+    const X = i => 25 + i * (280 / (pts.length - 1));
+    const Y = v => 15 + (max - v) / (max - min) * 110;
+    const line = pts.map((p, i) => `${X(i)},${Y(p.value)}`).join(" ");
+    let svg = `<polyline points="${line}" fill="none" stroke="#4ade80" stroke-width="2"/>`;
+    svg += `<polygon points="${X(0)},${Y(vals[0])} ${line} ${X(pts.length-1)},135 ${X(0)},135" fill="rgba(74,222,128,.07)" stroke="none"/>`;
+    pts.forEach((p, i) => {
+      svg += `<circle class="pt" cx="${X(i)}" cy="${Y(p.value)}" r="3"/>`;
+      svg += `<text class="axis" x="${X(i)}" y="147" text-anchor="middle">${p.label}</text>`;
+      svg += `<text class="axis" x="${X(i)}" y="${Y(p.value)-7}" text-anchor="middle">${p.value.toLocaleString()}</text>`;
+    });
+    document.getElementById("chartsvg").innerHTML = svg;
+    document.getElementById("chartnote").textContent = D.kospiTrend.note;
+  })();
+
+  // ---- 주전 10 테이블 ----
+  document.getElementById("main10body").innerHTML = D.main10.map(s => {
+    const pct = (s.currentPrice ?? s.basePrice) / s.targetPrice * 100;
     const badge = s.confidence === "상" ? "b-high" : "b-mid";
     return `<tr>
-      <td class="stock">${s.name}${s.starred ? " ★" : ""}<br><span class="code">${s.code}</span></td>
-      <td class="sector">${s.sector}</td>
+      <td class="stock">${s.name}${s.starred ? " ★" : ""}<br><span class="code">${s.code} · ${s.thesis}</span></td>
+      <td style="font-size:11px;color:var(--muted);white-space:nowrap">${s.sector}</td>
       <td class="num">${won(s.basePrice)}</td>
-      <td class="num">${s.currentPrice ? won(s.currentPrice) : "<span style='color:var(--muted)'>점검 대기</span>"}</td>
+      <td class="num">${s.currentPrice ? won(s.currentPrice) : "<span style='color:var(--muted)'>재심사 중</span>"}</td>
       <td class="num" style="color:var(--green)">${won(s.targetPrice)}</td>
-      <td><div class="gauge"><div class="bar"><div class="fill" style="width:${pct.toFixed(1)}%"></div></div><div class="lbl">${pct.toFixed(1)}% / 100%</div></div></td>
+      <td><div class="pgauge"><div class="bar"><div class="fill" style="width:${Math.min(100,pct).toFixed(1)}%"></div></div><div class="lbl">${pct.toFixed(1)}%</div></div></td>
       <td><span class="badge ${badge}">${s.confidence}</span></td>
-      <td class="thesis">${s.thesis}</td>
     </tr>`;
   }).join("");
 
-  // 후보 10 (기능 4)
-  document.getElementById("bench10").innerHTML = D.bench10.map(b =>
-    `<li><span class="bn">${b.name} <span style="color:var(--muted);font-weight:400;font-size:11px">${b.code}</span></span><span class="bnote">${b.note}</span></li>`
-  ).join("");
+  // ---- 분야별 노출 바 (main10에서 자동 집계) ----
+  (() => {
+    const cnt = {};
+    D.main10.forEach(s => cnt[s.sector] = (cnt[s.sector] || 0) + 1);
+    const entries = Object.entries(cnt).sort((a,b) => b[1]-a[1]);
+    const maxN = entries[0][1];
+    document.getElementById("sectorbars").innerHTML = entries.map(([sec, n]) => `
+      <div class="brow"><div class="bname">${sec}</div>
+      <div class="btrack"><div class="bfill" style="width:${n/maxN*100}%"></div></div>
+      <div class="bval">${n}종목 (${(n/D.main10.length*100).toFixed(0)}%)</div></div>`).join("");
+    const maxSec = entries[0];
+    document.getElementById("concnote").innerHTML =
+      `최대 집중: <b>${maxSec[0]} ${maxSec[1]}종목</b> — 강령 상한(동일 테마 5종목) ${maxSec[1] <= 5 ? "이내 ✓" : "초과 ⚠️"}`;
+  })();
 
-  // 업무 일지 (기능 2)
-  document.getElementById("journal").innerHTML = D.journal.map(j =>
-    `<div class="entry"><div class="jd">${j.date}</div><div class="jt">${j.title}</div><div class="jb">${j.body}</div></div>`
-  ).join("");
-
-  // 면책
+  // ---- 후보 10 / 일지 / 면책 ----
+  document.getElementById("bench10body").innerHTML = D.bench10.map(b =>
+    `<li><span class="bn">${b.name} <span style="color:var(--muted);font-weight:400;font-size:10.5px">${b.code}</span></span><span class="bnote">${b.note}</span></li>`).join("");
+  document.getElementById("journalbody").innerHTML = D.journal.map(j =>
+    `<div class="entry"><div class="jd">${j.date}</div><div class="jt">${j.title}</div><div class="jb">${j.body}</div></div>`).join("");
   document.getElementById("disclaimer").textContent = D.disclaimer;
 </script>
 </body>

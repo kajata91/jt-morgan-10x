@@ -213,8 +213,8 @@
 
     <div class="row r2">
       <div class="card" id="main10">
-        <h2>주전 10종목 <span class="fn">기능 1 · 9</span></h2>
-        <div class="desc">기준가(2026-07-01 종가) 대비 목표 10배 — ★는 기준가 확정 대기 · 게이지는 목표가 대비 달성률</div>
+        <h2><span id="mainTitle">주전 종목</span> <span class="fn">기능 1 · 9</span></h2>
+        <div class="desc">기준가(2026-07-01 종가 · 전 종목 확정) 대비 2032-08-05까지 10배 — 게이지는 달성률 · GIC 심의 판정 병기</div>
         <div class="tablewrap">
           <table>
             <thead><tr><th>INSTRUMENT</th><th>분야</th><th>기준가</th><th>현재가</th><th>목표가</th><th>달성률</th><th>확신도</th></tr></thead>
@@ -224,7 +224,7 @@
       </div>
       <div class="card">
         <h2>분야별 노출 <span class="fn">Strength meter</span></h2>
-        <div class="desc">주전 10종목의 섹터 분포 — 같은 테마 5종목 초과 금지 (강령 제2장 2조)</div>
+        <div class="desc">주전 종목의 섹터 분포 — 같은 테마 5종목 초과 금지 (강령 제2장 2조)</div>
         <div class="bars" id="sectorbars"></div>
         <div class="side-note" style="margin-top:14px" id="concnote"></div>
       </div>
@@ -237,8 +237,8 @@
         <div id="journalbody"></div>
       </div>
       <div class="card" id="bench10">
-        <h2>후보 10종목 <span class="fn">기능 4</span></h2>
-        <div class="desc">주전 결원 시 승격 대기</div>
+        <h2><span id="benchTitle">후보</span> <span class="fn">기능 4</span></h2>
+        <div class="desc">승격 대기 · 강등 · 투기 버킷 격리 종목</div>
         <ul class="bench" id="bench10body"></ul>
       </div>
     </div>
@@ -337,6 +337,10 @@
     document.getElementById("concnote").innerHTML =
       `최대 집중: <b>${maxSec[0]} ${maxSec[1]}종목</b> — 강령 상한(동일 테마 5종목) ${maxSec[1] <= 5 ? "이내 ✓" : "초과 ⚠️"}`;
   })();
+
+  // ---- 동적 카운트 (하드코딩 방지) ----
+  document.getElementById("mainTitle").textContent = `주전 ${D.main10.length}종목 (결원 ${10 - D.main10.length}석)`;
+  document.getElementById("benchTitle").textContent = `후보·격리 ${D.bench10.length}종목`;
 
   // ---- 후보 10 / 일지 / 면책 ----
   document.getElementById("bench10body").innerHTML = D.bench10.map(b =>

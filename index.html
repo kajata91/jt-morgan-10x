@@ -283,9 +283,13 @@
         </div>
         <div class="tablewrap">
           <table style="min-width:700px">
-            <thead><tr><th>종목</th><th>매수가</th><th>주식수</th><th>현재가</th><th>수익률</th><th>평가손익</th><th>10배 목표가</th><th>달성률</th><th></th></tr></thead>
+            <thead><tr><th style="width:28px"><input type="checkbox" id="myselAll" title="전체 선택"></th><th>종목</th><th>매수가</th><th>주식수</th><th>현재가</th><th>수익률</th><th>평가손익</th><th>10배 목표가</th><th>달성률</th><th></th></tr></thead>
             <tbody id="mybody"></tbody>
           </table>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+          <button id="myDelSel" style="background:var(--card2);border:1px solid var(--line);color:var(--red);border-radius:10px;padding:7px 14px;font-size:12px;cursor:pointer;font-weight:600">🗑 선택 삭제</button>
+          <span style="font-size:10.5px;color:var(--muted)">체크박스로 여러 종목을 선택한 뒤 한 번에 삭제할 수 있습니다</span>
         </div>
         <div class="mynote">※ 현재가는 매 영업일 장 마감 후(16:50) 자동 갱신되는 전 종목 시세 파일(prices.js·네이버 출처)을 사용합니다. 현재가 숫자를 클릭하면 수동으로 덮어쓸 수 있고(수동 뱃지), 빈 값으로 입력하면 자동으로 되돌아갑니다. 데이터는 이 기기의 브라우저에만 저장되며 텐버의 추천과 무관한 개인 기록입니다.</div>
       </div>
@@ -535,7 +539,7 @@
     const list = loadMy();
     const body = document.getElementById("mybody");
     if (!list.length) {
-      body.innerHTML = `<tr><td colspan="9" style="color:var(--muted);font-size:12px">아직 입력된 종목이 없습니다 — 종목명을 검색해 선택하고 매수가·주식수를 입력한 뒤 '추가'를 눌러보세요.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="10" style="color:var(--muted);font-size:12px">아직 입력된 종목이 없습니다 — 종목명을 검색해 선택하고 매수가·주식수를 입력한 뒤 '추가'를 눌러보세요.</td></tr>`;
       return;
     }
     body.innerHTML = list.map((s, i) => {
@@ -547,6 +551,7 @@
       const ach = hasCur ? cur / target * 100 : null;
       const badge = s.curManual != null ? `<span class="pbadge pb-manual">수동</span>` : (hasCur ? `<span class="pbadge pb-auto">자동</span>` : "");
       return `<tr>
+        <td><input type="checkbox" class="mysel" data-i="${i}"></td>
         <td class="stock">${s.name}${s.code ? `<br><span class="code">${s.code}</span>` : ""}</td>
         <td class="num">${won(s.buy)}</td>
         <td class="num">${(s.qty || 1).toLocaleString()}주</td>
@@ -560,6 +565,18 @@
     }).join("");
   }
   window.delMy = i => { const l = loadMy(); l.splice(i, 1); saveMy(l); renderMy(); };
+  document.getElementById("myselAll").onchange = e =>
+    document.querySelectorAll(".mysel").forEach(c => c.checked = e.target.checked);
+  document.getElementById("myDelSel").onclick = () => {
+    const idx = [...document.querySelectorAll(".mysel:checked")].map(c => Number(c.dataset.i));
+    if (!idx.length) { alert("삭제할 종목을 먼저 체크해 주세요."); return; }
+    if (!confirm(`선택한 ${idx.length}개 종목을 삭제할까요?`)) return;
+    const l = loadMy();
+    idx.sort((a, b) => b - a).forEach(i => l.splice(i, 1));
+    saveMy(l);
+    document.getElementById("myselAll").checked = false;
+    renderMy();
+  };
   window.editCur = i => {
     const l = loadMy();
     const v = prompt(`${l[i].name}의 현재가를 수동 입력하세요 (원)\n빈 값으로 확인하면 자동 시세로 되돌아갑니다.`, effCur(l[i]) ?? "");

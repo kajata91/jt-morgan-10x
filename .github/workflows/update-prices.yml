@@ -1,0 +1,32 @@
+name: update-prices
+
+on:
+  schedule:
+    # 평일 16:50 KST (07:50 UTC) — 장 마감 후 종가 수집
+    - cron: "50 7 * * 1-5"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch KRX prices via Naver
+        run: python3 scripts/fetch_prices.py
+      - name: Commit & push if changed
+        run: |
+          git config user.name "tenver-bot"
+          git config user.email "actions@github.com"
+          git add prices.js
+          if git diff --cached --quiet; then
+            echo "No price changes."
+          else
+            git commit -m "시세 자동 갱신 $(date +'%Y-%m-%d') [skip ci]"
+            git push
+          fi

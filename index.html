@@ -644,8 +644,8 @@
       return `<tr>
         <td><input type="checkbox" class="mysel" data-i="${i}"></td>
         <td class="stock">${s.name}${s.code ? `<br><span class="code">${s.code}</span>` : ""}</td>
-        <td class="num">${won(s.buy)}</td>
-        <td class="num">${(s.qty || 1).toLocaleString()}주</td>
+        <td class="num" style="cursor:pointer;text-decoration:underline dotted" title="클릭해서 매수가 수정" onclick="editBuy(${i})">${won(s.buy)}</td>
+        <td class="num" style="cursor:pointer;text-decoration:underline dotted" title="클릭해서 주식수 수정" onclick="editQty(${i})">${(s.qty || 1).toLocaleString()}주</td>
         <td class="num" style="cursor:pointer;text-decoration:underline dotted" title="클릭: 수동 수정 / 빈 값 입력: 자동 복귀" onclick="editCur(${i})">${hasCur ? won(cur) : "입력 필요"}${badge}</td>
         <td class="num ${ret == null ? "" : ret >= 0 ? "up" : "down"}">${ret == null ? "—" : pct(ret)}</td>
         <td class="num ${pl == null ? "" : pl >= 0 ? "up" : "down"}">${pl == null ? "—" : (pl >= 0 ? "+" : "") + Math.round(pl).toLocaleString() + "원"}</td>
@@ -656,6 +656,22 @@
     }).join("");
   }
   window.delMy = i => { const l = loadMy(); l.splice(i, 1); saveMy(l); renderMy(); };
+  window.editBuy = i => {
+    const l = loadMy();
+    const v = prompt(`${l[i].name}의 매수가(평균단가)를 입력하세요 (원)`, l[i].buy);
+    if (v === null) return;
+    const n = Number(String(v).replace(/[, ]/g, ""));
+    if (n > 0) { l[i].buy = n; saveMy(l); renderMy(); }
+    else alert("0보다 큰 숫자를 입력해 주세요.");
+  };
+  window.editQty = i => {
+    const l = loadMy();
+    const v = prompt(`${l[i].name}의 보유 주식수를 입력하세요`, l[i].qty || 1);
+    if (v === null) return;
+    const n = Number(String(v).replace(/[, ]/g, ""));
+    if (n > 0) { l[i].qty = n; saveMy(l); renderMy(); }
+    else alert("0보다 큰 숫자를 입력해 주세요.");
+  };
   document.getElementById("myselAll").onchange = e =>
     document.querySelectorAll(".mysel").forEach(c => c.checked = e.target.checked);
   document.getElementById("myDelSel").onclick = () => {

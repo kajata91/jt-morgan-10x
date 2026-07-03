@@ -271,10 +271,11 @@
     <div class="row r2">
       <div class="card" id="mystocks">
         <h2>내 종목 <span class="fn">기능 6 · 10</span></h2>
-        <div class="desc">종목명으로 검색해 등록하면 현재가·수익률이 최근 마감 시세로 자동 계산됩니다 (이 브라우저에만 저장) · <span id="priceAsOf" class="clickhint"></span></div>
+        <div class="desc">주식·ETF·ETN(레버리지·인버스 포함)을 검색해 등록하면 현재가·수익률이 최근 마감 시세로 자동 계산됩니다 (이 브라우저에만 저장) · <span id="priceAsOf" class="clickhint"></span></div>
+        <div id="mySummary" style="display:none;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:11px 15px;margin-bottom:12px;font-size:12.5px;gap:18px;flex-wrap:wrap"></div>
         <div class="myform">
           <div class="searchbox">
-            <input id="myName" placeholder="종목명 검색 (예: 삼성전자)" autocomplete="off">
+            <input id="myName" placeholder="종목명 검색 — 주식·ETF·ETN 모두 가능 (예: KODEX 200)" autocomplete="off">
             <div class="sugg" id="sugg"></div>
           </div>
           <input id="myBuy" type="number" placeholder="매수가 (원)">
@@ -535,11 +536,32 @@
 
   function effCur(s) { return s.curManual ?? livePrice(s.code); }
 
+  function renderSummary(list) {
+    const box = document.getElementById("mySummary");
+    if (!list.length) { box.style.display = "none"; return; }
+    let buySum = 0, evalSum = 0, priced = 0, unpriced = 0;
+    list.forEach(s => {
+      const qty = s.qty || 1, cur = effCur(s);
+      buySum += s.buy * qty;
+      if (cur != null && cur > 0) { evalSum += cur * qty; priced++; } else unpriced++;
+    });
+    const pl = evalSum - list.filter(s => effCur(s) > 0).reduce((a, s) => a + s.buy * (s.qty || 1), 0);
+    const base = evalSum - pl;
+    const plPct = base > 0 ? pl / base * 100 : 0;
+    box.style.display = "flex";
+    box.innerHTML =
+      `<span><span style="color:var(--muted)">총 매수금액</span> <b>${Math.round(buySum).toLocaleString()}원</b></span>` +
+      `<span><span style="color:var(--muted)">총 평가금액</span> <b style="color:var(--green)">${Math.round(evalSum).toLocaleString()}원</b></span>` +
+      `<span><span style="color:var(--muted)">총 평가손익</span> <b class="${pl >= 0 ? "up" : "down"}">${(pl >= 0 ? "+" : "") + Math.round(pl).toLocaleString()}원 (${(plPct >= 0 ? "+" : "") + plPct.toFixed(1)}%)</b></span>` +
+      (unpriced ? `<span style="color:var(--amber);font-size:11px">※ 현재가 미확인 ${unpriced}종목은 평가금액·손익에서 제외</span>` : "");
+  }
+
   function renderMy() {
     const list = loadMy();
     const body = document.getElementById("mybody");
+    renderSummary(list);
     if (!list.length) {
-      body.innerHTML = `<tr><td colspan="10" style="color:var(--muted);font-size:12px">아직 입력된 종목이 없습니다 — 종목명을 검색해 선택하고 매수가·주식수를 입력한 뒤 '추가'를 눌러보세요.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="10" style="color:var(--muted);font-size:12px">아직 입력된 종목이 없습니다 — 종목명(주식·ETF·ETN)을 검색해 선택하고 매수가·주식수를 입력한 뒤 '추가'를 눌러보세요.</td></tr>`;
       return;
     }
     body.innerHTML = list.map((s, i) => {

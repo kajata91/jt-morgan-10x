@@ -158,6 +158,8 @@
   .gatebox button { width:100%; background:linear-gradient(135deg,#14532d,#4ade80); border:none; border-radius:10px; padding:11px; color:#06130b; font-weight:800; font-size:14px; cursor:pointer; }
   .gateerr { color:var(--red); font-size:12px; margin-top:10px; min-height:16px; }
   .gatefoot { font-size:10px; color:var(--muted); margin-top:12px; line-height:1.6; }
+  .pulse { animation: pulse 1.8s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity:.9 } 50% { opacity:.2 } }
 
   footer { font-size:10.5px; color:var(--muted); line-height:1.7; padding:16px 4px 30px; border-top:1px solid var(--line); margin-top:6px; }
 
@@ -243,9 +245,9 @@
 
       <div class="card" id="assetCard">
         <h2>내 자산 — 10배 목표 <span class="fn">기능 9</span></h2>
-        <div class="desc">내 종목 총 평가금액 기준 · 목표액 = 총 매수금액 × 10 · 접속할 때마다 자동 기록되어 분기별 추이가 쌓입니다</div>
+        <div class="desc">내 종목 총 평가금액 기준 · 목표액 = 총 매수금액 × 10 · 2032-08-05 목표일까지의 등정 지도 위에 나의 궤적이 자동으로 그려집니다</div>
         <div id="assetNums" style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:10px"></div>
-        <svg id="assetChart" viewBox="0 0 320 150" preserveAspectRatio="none" style="width:100%;height:150px"></svg>
+        <svg id="assetChart" viewBox="0 0 320 170" preserveAspectRatio="none" style="width:100%;height:170px"></svg>
         <div class="chartnote" id="assetNote"></div>
       </div>
     </div>
@@ -532,35 +534,58 @@
     hist.push({ d: today, e: Math.round(evalSum), b: Math.round(buySum) });
     hist.sort((a, b) => a.d < b.d ? -1 : 1);
     localStorage.setItem(HIST_KEY, JSON.stringify(hist));
-    // 분기별 마지막 스냅샷으로 달성률 추이
-    const byQ = {};
-    hist.forEach(h => {
-      const dt = new Date(h.d + "T00:00:00");
-      const q = `${String(dt.getFullYear()).slice(2)}Q${Math.floor(dt.getMonth() / 3) + 1}`;
-      byQ[q] = { q, ach: h.b > 0 ? h.e / (h.b * 10) * 100 : 0 };
+    // ---- 10배 등정 지도: 타임라인(2026-07 → 2032-08) 위의 나의 궤적 ----
+    const t0 = new Date("2026-07-01T00:00:00").getTime(), tEnd = new Date("2032-08-05T00:00:00").getTime();
+    const W = 320, H = 170, Lp = 14, Rp = 40, Tp = 14, Bp = 26;
+    const xOf = ts => Lp + Math.min(1, Math.max(0, (ts - t0) / (tEnd - t0))) * (W - Lp - Rp);
+    const maxY = 112;
+    const yOf = v => Tp + (1 - Math.min(v, maxY) / maxY) * (H - Tp - Bp);
+    let svg = `<defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(74,222,128,.4)"/><stop offset="1" stop-color="rgba(74,222,128,.02)"/></linearGradient></defs>`;
+    // 마일스톤 가로선 (원금·2배·5배·10배)
+    [[10, "원금"], [20, "2배"], [50, "5배"], [100, "🏆 10배"]].forEach(([v, lab]) => {
+      svg += `<line x1="${Lp}" x2="${W - Rp}" y1="${yOf(v)}" y2="${yOf(v)}" stroke="${v === 100 ? "#4ade80" : "#2b322f"}" stroke-dasharray="${v === 100 ? "5,3" : "3,4"}"/>`;
+      svg += `<text x="${W - Rp + 3}" y="${yOf(v) + 3}" class="axis" fill="${v === 100 ? "#4ade80" : "#8a938e"}">${lab}</text>`;
     });
-    const pts = Object.values(byQ);
-    const maxY = Math.max(15, ...pts.map(p => p.ach)) * 1.3;
-    const n = pts.length, W = 320, H = 150;
-    const bw = Math.min(46, (W - 40) / n * 0.55);
-    const yOf = v => H - 22 - (v / maxY) * (H - 45);
-    let svg = `<defs><linearGradient id="g1" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#166534"/><stop offset="1" stop-color="#4ade80"/></linearGradient></defs>`;
-    svg += `<line x1="16" x2="${W - 5}" y1="${yOf(10)}" y2="${yOf(10)}" stroke="#374440" stroke-dasharray="3,3"/>`;
-    svg += `<text x="${W - 5}" y="${yOf(10) - 3}" text-anchor="end" class="axis">10% = 원금 수준</text>`;
-    if (maxY >= 100) {
-      svg += `<line x1="16" x2="${W - 5}" y1="${yOf(100)}" y2="${yOf(100)}" stroke="#4ade80" stroke-dasharray="4,3"/>`;
-      svg += `<text x="${W - 5}" y="${yOf(100) - 3}" text-anchor="end" class="axis" fill="#4ade80">100% = 10배 목표</text>`;
+    // 6개월 단위 시간축 (2026.12 ~ 2031.12)
+    for (let y = 2026, m = 12; new Date(`${y}-${String(m).padStart(2, "0")}-01`).getTime() <= new Date("2031-12-31").getTime();) {
+      const x = xOf(new Date(`${y}-${String(m).padStart(2, "0")}-01`).getTime());
+      svg += `<line x1="${x}" x2="${x}" y1="${H - Bp}" y2="${H - Bp + 3}" stroke="#374440"/>`;
+      svg += `<text x="${x}" y="${H - Bp + 13}" text-anchor="middle" class="axis">${String(y).slice(2)}.${m}</text>`;
+      m += 6; if (m > 12) { m = 6; y += 1; }
     }
-    pts.forEach((p, i) => {
-      const x = 16 + (i + 0.5) * ((W - 32) / n) - bw / 2;
-      const y = yOf(p.ach);
-      svg += `<rect x="${x}" y="${y}" width="${bw}" height="${Math.max(2, H - 22 - y)}" rx="4" fill="url(#g1)"/>`;
-      svg += `<text x="${x + bw / 2}" y="${y - 5}" text-anchor="middle" class="axis" fill="#4ade80">${p.ach.toFixed(1)}%</text>`;
-      svg += `<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle" class="axis">${p.q}</text>`;
-    });
+    // 목표일 깃발 (2032-08-05)
+    const xG = xOf(tEnd);
+    svg += `<line x1="${xG}" x2="${xG}" y1="${Tp}" y2="${H - Bp}" stroke="#4ade80" stroke-dasharray="2,3" opacity=".55"/>`;
+    svg += `<text x="${xG}" y="${H - Bp + 13}" text-anchor="middle" class="axis" fill="#4ade80" font-weight="bold">32.8</text>`;
+    svg += `<text x="${xG - 3}" y="${Tp + 8}" text-anchor="end" class="axis" fill="#4ade80" font-weight="bold">🚩 10X</text>`;
+    // 목표 성장 경로 (원금 → 10배, 연 ~46% 복리 곡선)
+    let gp = "";
+    for (let i = 0; i <= 48; i++) {
+      const ts = t0 + (tEnd - t0) * i / 48;
+      gp += `${i ? "L" : "M"}${xOf(ts).toFixed(1)},${yOf(10 * Math.pow(10, i / 48)).toFixed(1)}`;
+    }
+    svg += `<path d="${gp}" fill="none" stroke="#fbbf24" stroke-width="1.3" stroke-dasharray="4,3" opacity=".7"/>`;
+    svg += `<text x="${xOf(t0 + (tEnd - t0) * 0.52)}" y="${yOf(10 * Math.pow(10, 0.52)) - 7}" text-anchor="middle" class="axis" fill="#fbbf24">목표 경로 · 연 ~46%</text>`;
+    // 나의 실제 궤적 (접속 기록)
+    const hp = hist.map(h => ({ x: xOf(new Date(h.d + "T00:00:00").getTime()), y: yOf(h.b > 0 ? h.e / (h.b * 10) * 100 : 0) }));
+    if (hp.length) {
+      const line = hp.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join("");
+      if (hp.length > 1) svg += `<path d="${line}L${hp[hp.length - 1].x.toFixed(1)},${H - Bp}L${hp[0].x.toFixed(1)},${H - Bp}Z" fill="url(#ga)" stroke="none"/>`;
+      svg += `<path d="${line}" fill="none" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round"/>`;
+      const c = hp[hp.length - 1];
+      svg += `<circle cx="${c.x}" cy="${c.y}" r="8" fill="rgba(74,222,128,.22)" class="pulse"/>`;
+      svg += `<circle cx="${c.x}" cy="${c.y}" r="3.2" fill="#4ade80"/>`;
+      svg += `<text x="${c.x + 7}" y="${c.y - 8}" class="axis" fill="#e8ece9" font-weight="bold" font-size="11">🚀 ${ach.toFixed(1)}%</text>`;
+    }
     document.getElementById("assetChart").innerHTML = svg;
-    document.getElementById("assetNote").textContent =
-      `분기별 마지막 접속 시점의 달성률 추이 — 2032-08-05 매도 목표일까지 자동 축적 (기록 ${hist.length}일 · ${n}개 분기)`;
+    // 동기부여 캡션
+    const now = Date.now();
+    const daysLeft = Math.max(0, Math.round((tEnd - now) / 86400000));
+    const yearsLeft = Math.max(0.1, (tEnd - now) / 31557600000);
+    const mult = buySum > 0 ? evalSum / buySum : 0;
+    const needCagr = evalSum > 0 ? (Math.pow(target / evalSum, 1 / yearsLeft) - 1) * 100 : 0;
+    document.getElementById("assetNote").innerHTML =
+      `현재 <b style="color:var(--text)">${mult.toFixed(2)}배</b> 지점 · 목표까지 <b style="color:var(--green)">D-${daysLeft.toLocaleString()}</b> · 지금부터 필요한 성장 <b style="color:var(--amber)">연 ${needCagr.toFixed(0)}%</b> — 접속할 때마다 궤적이 자동으로 쌓입니다 (기록 ${hist.length}일)`;
   }
 
   function renderSummary(list) {

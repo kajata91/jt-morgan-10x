@@ -241,11 +241,12 @@
         <div class="kv"><span class="k">이상 신호</span><span class="warn">사이드카 · 6월 CB 3회</span></div>
       </div>
 
-      <div class="card chart">
-        <h2>KOSPI 추이 <span class="fn">확인 지점 연결</span></h2>
-        <div class="desc" id="chartnote"></div>
-        <svg id="chartsvg" viewBox="0 0 320 150" preserveAspectRatio="none"></svg>
-        <div class="chartnote">※ 텐버가 출처로 확인한 지점만 연결한 개략 추이입니다 (일별 전체 데이터 아님)</div>
+      <div class="card" id="assetCard">
+        <h2>내 자산 — 10배 목표 <span class="fn">기능 9</span></h2>
+        <div class="desc">내 종목 총 평가금액 기준 · 목표액 = 총 매수금액 × 10 · 접속할 때마다 자동 기록되어 분기별 추이가 쌓입니다</div>
+        <div id="assetNums" style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:10px"></div>
+        <svg id="assetChart" viewBox="0 0 320 150" preserveAspectRatio="none" style="width:100%;height:150px"></svg>
+        <div class="chartnote" id="assetNote"></div>
       </div>
     </div>
 
@@ -288,9 +289,13 @@
             <tbody id="mybody"></tbody>
           </table>
         </div>
-        <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button id="myEdit" style="background:var(--card2);border:1px solid var(--line);color:var(--green);border-radius:10px;padding:7px 14px;font-size:12px;cursor:pointer;font-weight:600">✎ 선택 편집</button>
+          <button id="myUp" style="background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:7px 12px;font-size:12px;cursor:pointer">▲ 위로</button>
+          <button id="myDown" style="background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:7px 12px;font-size:12px;cursor:pointer">▼ 아래로</button>
           <button id="myDelSel" style="background:var(--card2);border:1px solid var(--line);color:var(--red);border-radius:10px;padding:7px 14px;font-size:12px;cursor:pointer;font-weight:600">🗑 선택 삭제</button>
-          <span style="font-size:10.5px;color:var(--muted)">체크박스로 여러 종목을 선택한 뒤 한 번에 삭제할 수 있습니다</span>
+          <button id="myCancel" style="display:none;background:var(--card2);border:1px solid var(--amber);color:var(--amber);border-radius:10px;padding:7px 14px;font-size:12px;cursor:pointer">편집 취소</button>
+          <span style="font-size:10.5px;color:var(--muted)">편집·이동은 1개, 삭제는 여러 개 선택 가능</span>
         </div>
         <div class="mynote">※ 현재가는 매 영업일 장 마감 후(16:50) 자동 갱신되는 전 종목 시세 파일(prices.js·네이버 출처)을 사용합니다. 현재가 숫자를 클릭하면 수동으로 덮어쓸 수 있고(수동 뱃지), 빈 값으로 입력하면 자동으로 되돌아갑니다. 데이터는 이 기기의 브라우저에만 저장되며 텐버의 추천과 무관한 개인 기록입니다.</div>
       </div>
@@ -416,23 +421,7 @@
     document.getElementById("rangebar").innerHTML = html;
   })();
 
-  // KOSPI 차트
-  (() => {
-    const pts = D.kospiTrend.points, vals = pts.map(p => p.value);
-    const min = Math.min(...vals) - 200, max = Math.max(...vals) + 200;
-    const X = i => 25 + i * (280 / (pts.length - 1));
-    const Y = v => 15 + (max - v) / (max - min) * 110;
-    const line = pts.map((p, i) => `${X(i)},${Y(p.value)}`).join(" ");
-    let svg = `<polyline points="${line}" fill="none" stroke="#4ade80" stroke-width="2"/>`;
-    svg += `<polygon points="${X(0)},${Y(vals[0])} ${line} ${X(pts.length-1)},135 ${X(0)},135" fill="rgba(74,222,128,.07)"/>`;
-    pts.forEach((p, i) => {
-      svg += `<circle class="pt" cx="${X(i)}" cy="${Y(p.value)}" r="3"/>`;
-      svg += `<text class="axis" x="${X(i)}" y="147" text-anchor="middle">${p.label}</text>`;
-      svg += `<text class="axis" x="${X(i)}" y="${Y(p.value)-7}" text-anchor="middle">${p.value.toLocaleString()}</text>`;
-    });
-    document.getElementById("chartsvg").innerHTML = svg;
-    document.getElementById("chartnote").textContent = D.kospiTrend.note;
-  })();
+  // (KOSPI 추이 카드는 v1.1에서 '내 자산 — 10배 목표' 카드로 대체됨 — updateAssetCard 참조)
 
   // ---- 리포트 모달 ----
   const overlay = document.getElementById("overlay");
@@ -536,6 +525,63 @@
 
   function effCur(s) { return s.curManual ?? livePrice(s.code); }
 
+  // ---- 내 자산 — 10배 목표 카드 (기능 9) ----
+  const HIST_KEY = "tenver_asset_history";
+  function updateAssetCard() {
+    const list = loadMy();
+    let buySum = 0, evalSum = 0;
+    list.forEach(s => { const q = s.qty || 1; buySum += s.buy * q; const c = effCur(s); if (c > 0) evalSum += c * q; });
+    const target = buySum * 10;
+    const ach = target > 0 ? evalSum / target * 100 : 0;
+    const nums = document.getElementById("assetNums");
+    if (!buySum) {
+      nums.innerHTML = `<span style="color:var(--muted);font-size:12px">'내 종목'에 보유 종목을 입력하면 현재 자산·10배 목표액·달성률이 여기에 표시되고, 분기별 추이가 자동으로 쌓입니다.</span>`;
+      document.getElementById("assetChart").innerHTML = "";
+      document.getElementById("assetNote").textContent = "";
+      return;
+    }
+    nums.innerHTML =
+      `<span><div style="font-size:10px;color:var(--muted)">현재 자산</div><div style="font-size:19px;font-weight:800">${Math.round(evalSum).toLocaleString()}원</div></span>` +
+      `<span><div style="font-size:10px;color:var(--muted)">10배 목표액</div><div style="font-size:19px;font-weight:800;color:var(--green)">${Math.round(target).toLocaleString()}원</div></span>` +
+      `<span><div style="font-size:10px;color:var(--muted)">목표 달성률</div><div style="font-size:19px;font-weight:800;color:var(--amber)">${ach.toFixed(1)}%</div></span>`;
+    // 오늘 스냅샷 기록 (하루 1개, 같은 날은 최신값으로 갱신)
+    let hist = []; try { hist = JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch {}
+    const today = new Date().toISOString().slice(0, 10);
+    hist = hist.filter(h => h.d !== today);
+    hist.push({ d: today, e: Math.round(evalSum), b: Math.round(buySum) });
+    hist.sort((a, b) => a.d < b.d ? -1 : 1);
+    localStorage.setItem(HIST_KEY, JSON.stringify(hist));
+    // 분기별 마지막 스냅샷으로 달성률 추이
+    const byQ = {};
+    hist.forEach(h => {
+      const dt = new Date(h.d + "T00:00:00");
+      const q = `${String(dt.getFullYear()).slice(2)}Q${Math.floor(dt.getMonth() / 3) + 1}`;
+      byQ[q] = { q, ach: h.b > 0 ? h.e / (h.b * 10) * 100 : 0 };
+    });
+    const pts = Object.values(byQ);
+    const maxY = Math.max(15, ...pts.map(p => p.ach)) * 1.3;
+    const n = pts.length, W = 320, H = 150;
+    const bw = Math.min(46, (W - 40) / n * 0.55);
+    const yOf = v => H - 22 - (v / maxY) * (H - 45);
+    let svg = `<defs><linearGradient id="g1" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#166534"/><stop offset="1" stop-color="#4ade80"/></linearGradient></defs>`;
+    svg += `<line x1="16" x2="${W - 5}" y1="${yOf(10)}" y2="${yOf(10)}" stroke="#374440" stroke-dasharray="3,3"/>`;
+    svg += `<text x="${W - 5}" y="${yOf(10) - 3}" text-anchor="end" class="axis">10% = 원금 수준</text>`;
+    if (maxY >= 100) {
+      svg += `<line x1="16" x2="${W - 5}" y1="${yOf(100)}" y2="${yOf(100)}" stroke="#4ade80" stroke-dasharray="4,3"/>`;
+      svg += `<text x="${W - 5}" y="${yOf(100) - 3}" text-anchor="end" class="axis" fill="#4ade80">100% = 10배 목표</text>`;
+    }
+    pts.forEach((p, i) => {
+      const x = 16 + (i + 0.5) * ((W - 32) / n) - bw / 2;
+      const y = yOf(p.ach);
+      svg += `<rect x="${x}" y="${y}" width="${bw}" height="${Math.max(2, H - 22 - y)}" rx="4" fill="url(#g1)"/>`;
+      svg += `<text x="${x + bw / 2}" y="${y - 5}" text-anchor="middle" class="axis" fill="#4ade80">${p.ach.toFixed(1)}%</text>`;
+      svg += `<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle" class="axis">${p.q}</text>`;
+    });
+    document.getElementById("assetChart").innerHTML = svg;
+    document.getElementById("assetNote").textContent =
+      `분기별 마지막 접속 시점의 달성률 추이 — 2032-08-05 매도 목표일까지 자동 축적 (기록 ${hist.length}일 · ${n}개 분기)`;
+  }
+
   function renderSummary(list) {
     const box = document.getElementById("mySummary");
     if (!list.length) { box.style.display = "none"; return; }
@@ -560,6 +606,7 @@
     const list = loadMy();
     const body = document.getElementById("mybody");
     renderSummary(list);
+    updateAssetCard();
     if (!list.length) {
       body.innerHTML = `<tr><td colspan="10" style="color:var(--muted);font-size:12px">아직 입력된 종목이 없습니다 — 종목명(주식·ETF·ETN)을 검색해 선택하고 매수가·주식수를 입력한 뒤 '추가'를 눌러보세요.</td></tr>`;
       return;
@@ -599,6 +646,40 @@
     document.getElementById("myselAll").checked = false;
     renderMy();
   };
+
+  // ---- 선택 편집 · 순서 이동 ----
+  let editIdx = null;
+  const addBtn = document.getElementById("myAdd");
+  const cancelBtn = document.getElementById("myCancel");
+  function selOne() {
+    const idx = [...document.querySelectorAll(".mysel:checked")].map(c => Number(c.dataset.i));
+    if (idx.length !== 1) { alert("이 기능은 종목을 1개만 선택한 뒤 사용해 주세요."); return null; }
+    return idx[0];
+  }
+  function resetForm() {
+    editIdx = null; addBtn.textContent = "＋ 추가"; cancelBtn.style.display = "none";
+    nameInput.value = ""; document.getElementById("myBuy").value = ""; document.getElementById("myQty").value = ""; selCode = null;
+  }
+  document.getElementById("myEdit").onclick = () => {
+    const i = selOne(); if (i == null) return;
+    const s = loadMy()[i];
+    nameInput.value = s.name; selCode = s.code || null;
+    document.getElementById("myBuy").value = s.buy;
+    document.getElementById("myQty").value = s.qty || 1;
+    editIdx = i; addBtn.textContent = "✔ 수정 저장"; cancelBtn.style.display = "inline-block";
+    nameInput.focus();
+  };
+  cancelBtn.onclick = resetForm;
+  const moveRow = dir => {
+    const i = selOne(); if (i == null) return;
+    const l = loadMy(); const j = i + dir;
+    if (j < 0 || j >= l.length) return;
+    [l[i], l[j]] = [l[j], l[i]];
+    saveMy(l); renderMy();
+    const cb = document.querySelector(`.mysel[data-i="${j}"]`); if (cb) cb.checked = true;
+  };
+  document.getElementById("myUp").onclick = () => moveRow(-1);
+  document.getElementById("myDown").onclick = () => moveRow(1);
   window.editCur = i => {
     const l = loadMy();
     const v = prompt(`${l[i].name}의 현재가를 수동 입력하세요 (원)\n빈 값으로 확인하면 자동 시세로 되돌아갑니다.`, effCur(l[i]) ?? "");
@@ -616,8 +697,13 @@
     // 이름만 입력하고 목록에서 선택하지 않았으면 정확 일치로 코드 자동 매칭
     let code = selCode;
     if (!code && P) { for (const [c, it] of Object.entries(P.items)) if (it.n === name) { code = c; break; } }
-    const l = loadMy(); l.push({ name, code, buy, qty }); saveMy(l);
-    nameInput.value = ""; document.getElementById("myBuy").value = ""; document.getElementById("myQty").value = ""; selCode = null;
+    const l = loadMy();
+    if (editIdx != null) {
+      l[editIdx] = { ...l[editIdx], name, code, buy, qty }; // 수동 현재가(curManual)는 보존
+    } else {
+      l.push({ name, code, buy, qty });
+    }
+    saveMy(l); resetForm();
     renderMy();
   };
   renderMy();

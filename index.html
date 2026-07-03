@@ -160,6 +160,9 @@
   .gatefoot { font-size:10px; color:var(--muted); margin-top:12px; line-height:1.6; }
   .pulse { animation: pulse 1.8s ease-in-out infinite; }
   @keyframes pulse { 0%,100% { opacity:.9 } 50% { opacity:.2 } }
+  /* 화면 편집 모드 */
+  body.editing [data-ek] { outline:1px dashed rgba(74,222,128,.55); outline-offset:2px; cursor:text; }
+  body.editing [data-ek]:hover { outline-color:#4ade80; background:rgba(74,222,128,.05); }
 
   footer { font-size:10.5px; color:var(--muted); line-height:1.7; padding:16px 4px 30px; border-top:1px solid var(--line); margin-top:6px; }
 
@@ -196,6 +199,7 @@
       <a href="#temp">시장 온도계</a>
       <a href="https://github.com/kajata91/jt-morgan-10x" target="_blank">GitHub 저장소</a>
       <a href="#" onclick="gateLock();return false">🔒 잠그기</a>
+      <a href="#" id="uiEditBtn">✏️ 화면 편집</a>
     </nav>
     <div class="side-note" id="sidenote"></div>
   </aside>
@@ -747,7 +751,52 @@
   renderMy();
 
   document.getElementById("disclaimer").textContent = D.disclaimer;
+  setupUiEdit();
   } // ================= initDashboard 끝 =================
+
+  // ================= 화면 편집 모드 (문구·글자 크기 — 비밀번호를 아는 이 기기 사용자만, 기기별 저장) =================
+  const UIE_KEY = "tenver_ui_edits";
+  let uiEditing = false;
+  function uiLoad() { try { return JSON.parse(localStorage.getItem(UIE_KEY)) || {}; } catch { return {}; } }
+  function setupUiEdit() {
+    const els = document.querySelectorAll(".card h2, .desc, .alert, .mynote, .chartnote, .side-note, footer");
+    els.forEach((el, i) => el.dataset.ek = "ek" + i);
+    const ov = uiLoad();
+    els.forEach(el => {
+      const o = ov[el.dataset.ek];
+      if (!o) return;
+      if (o.t) el.innerText = o.t;
+      if (o.s) el.style.fontSize = o.s + "px";
+    });
+  }
+  document.getElementById("uiEditBtn").onclick = e => {
+    e.preventDefault();
+    uiEditing = !uiEditing;
+    document.body.classList.toggle("editing", uiEditing);
+    document.getElementById("uiEditBtn").textContent = uiEditing ? "✅ 편집 종료" : "✏️ 화면 편집";
+    if (uiEditing) alert("화면 편집 모드가 켜졌습니다.\n\n점선으로 표시된 문구를 클릭하면 ① 내용 ② 글자 크기(px)를 바꿀 수 있습니다.\n'reset'을 입력하면 원래대로 돌아갑니다.\n변경 사항은 이 기기의 브라우저에만 저장됩니다.");
+  };
+  document.addEventListener("click", e => {
+    if (!uiEditing) return;
+    const el = e.target.closest("[data-ek]");
+    if (!el || e.target.closest("#uiEditBtn")) return;
+    e.preventDefault(); e.stopPropagation();
+    const ov = uiLoad(); const k = el.dataset.ek;
+    ov[k] = ov[k] || {};
+    const curT = ov[k].t || el.innerText;
+    const t = prompt("문구 수정 — 그대로 두려면 [확인], 원래대로 되돌리려면 reset 입력", curT);
+    if (t === null) return;
+    const s = prompt("글자 크기(px) — 숫자 입력 / 그대로: 빈 값 / 원래대로: reset", ov[k].s || "");
+    if (t.trim().toLowerCase() === "reset") delete ov[k].t;
+    else if (t !== curT || ov[k].t) ov[k].t = t;
+    if (s !== null) {
+      if (s.trim().toLowerCase() === "reset") delete ov[k].s;
+      else if (s && Number(s) > 6) ov[k].s = Number(s);
+    }
+    if (!ov[k].t && !ov[k].s) delete ov[k];
+    localStorage.setItem(UIE_KEY, JSON.stringify(ov));
+    location.reload();
+  }, true);
 </script>
 </body>
 </html>

@@ -33,5 +33,6 @@ jobs:
             echo "No price changes."
           else
             git commit -m "시세 자동 갱신 $(date +'%Y-%m-%d') [skip ci]"
+            git pull --rebase origin main || true
             git push
           fi

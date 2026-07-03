@@ -38,7 +38,6 @@
   .search { display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:9px 14px; width:250px; color:var(--muted); font-size:13px; }
   .avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#4ade80,#166534); display:flex; align-items:center; justify-content:center; font-weight:800; color:#06130b; }
 
-  /* ===== 티커 스트립 ===== */
   .strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:16px; background:var(--card); }
   .tick { padding:14px 16px; border-right:1px solid var(--line); }
   .tick:last-child { border-right:none; }
@@ -50,7 +49,6 @@
 
   .alert { background:rgba(251,191,36,.07); border:1px solid rgba(251,191,36,.3); color:#fde68a; border-radius:12px; padding:11px 15px; font-size:12.5px; line-height:1.6; margin-bottom:16px; }
 
-  /* ===== 카드 그리드 ===== */
   .row { display:grid; gap:16px; margin-bottom:16px; }
   .row.r3 { grid-template-columns:1fr 1.1fr 1.2fr; }
   .row.r2 { grid-template-columns:1.6fr 1fr; }
@@ -59,7 +57,7 @@
   .card .desc { font-size:11px; color:var(--muted); margin:3px 0 14px; }
   .fn { color:var(--muted); font-weight:400; font-size:11px; }
 
-  /* 온도계 게이지 */
+  /* 온도계 */
   .gaugewrap { display:flex; flex-direction:column; align-items:center; }
   .gauge-label { text-align:center; margin-top:-58px; }
   .gauge-label .big { font-size:26px; font-weight:800; color:var(--amber); }
@@ -70,7 +68,6 @@
   .rules li { font-size:11.5px; color:var(--muted); line-height:1.7; list-style:none; padding-left:14px; position:relative; }
   .rules li::before { content:"▸"; position:absolute; left:0; color:var(--green); }
 
-  /* 지수 카드 */
   .bigval { font-size:30px; font-weight:800; }
   .bigsub { font-size:13px; margin:4px 0 14px; }
   .kv { display:flex; justify-content:space-between; font-size:12px; padding:7px 0; border-bottom:1px solid var(--line); }
@@ -79,25 +76,26 @@
   .rangebar { display:flex; gap:2px; margin:12px 0 4px; height:26px; align-items:flex-end; }
   .rangebar i { flex:1; border-radius:2px; }
 
-  /* 차트 */
   .chart svg { width:100%; height:150px; }
   .chart .axis { font-size:9px; fill:var(--muted); }
   .chart .pt { fill:var(--green); }
   .chartnote { font-size:10px; color:var(--muted); margin-top:6px; }
 
-  /* 분야별 노출 바 */
   .bars .brow { display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:12px; }
   .bars .bname { width:92px; color:var(--muted); flex-shrink:0; }
   .bars .btrack { flex:1; height:8px; background:var(--card2); border-radius:6px; overflow:hidden; }
   .bars .bfill { height:100%; background:linear-gradient(90deg,var(--green-dim),var(--green)); border-radius:6px; }
   .bars .bval { width:70px; text-align:right; font-size:11px; color:var(--muted); flex-shrink:0; }
 
-  /* 주전 10 테이블 */
+  /* 테이블 */
   .tablewrap { overflow-x:auto; }
+  .scrolly { max-height:520px; overflow-y:auto; }
   table { width:100%; border-collapse:collapse; font-size:12.5px; min-width:680px; }
-  th { text-align:left; color:var(--muted); font-weight:500; font-size:10.5px; letter-spacing:.05em; padding:8px 10px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th { text-align:left; color:var(--muted); font-weight:500; font-size:10.5px; letter-spacing:.05em; padding:8px 10px; border-bottom:1px solid var(--line); white-space:nowrap; position:sticky; top:0; background:var(--card); }
   td { padding:11px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
   tr:last-child td { border-bottom:none; }
+  tr.clickable { cursor:pointer; }
+  tr.clickable:hover td { background:var(--card2); }
   .stock { font-weight:700; white-space:nowrap; }
   .stock .code { font-weight:400; font-size:10.5px; color:var(--muted); }
   .num { font-variant-numeric:tabular-nums; white-space:nowrap; }
@@ -108,28 +106,48 @@
   .pgauge .bar { height:6px; background:var(--card2); border-radius:6px; overflow:hidden; }
   .pgauge .fill { height:100%; background:linear-gradient(90deg,var(--green-dim),var(--green)); }
   .pgauge .lbl { font-size:9.5px; color:var(--muted); margin-top:3px; }
+  .clickhint { font-size:10px; color:var(--green); }
 
-  /* 후보/일지 */
-  .bench { list-style:none; }
-  .bench li { display:flex; justify-content:space-between; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); font-size:12.5px; }
+  /* 추가 추천 리스트 */
+  .bench { list-style:none; max-height:430px; overflow-y:auto; }
+  .bench li { display:flex; justify-content:space-between; gap:10px; padding:9px 6px; border-bottom:1px solid var(--line); font-size:12.5px; cursor:pointer; border-radius:8px; }
+  .bench li:hover { background:var(--card2); }
   .bench li:last-child { border-bottom:none; }
   .bench .bn { font-weight:600; white-space:nowrap; }
   .bench .bnote { color:var(--muted); font-size:11.5px; text-align:right; }
-  .journal .entry { padding:11px 0; border-bottom:1px solid var(--line); }
-  .journal .entry:last-child { border-bottom:none; }
-  .journal .jd { font-size:10.5px; color:var(--green); margin-bottom:3px; }
-  .journal .jt { font-size:13px; font-weight:700; margin-bottom:4px; }
-  .journal .jb { font-size:11.5px; color:var(--muted); line-height:1.65; }
+
+  /* 내 종목 계산기 */
+  .myform { display:grid; grid-template-columns:1.2fr 1fr 1fr auto; gap:8px; margin-bottom:12px; }
+  .myform input { background:var(--card2); border:1px solid var(--line); border-radius:10px; padding:9px 12px; color:var(--text); font-size:12.5px; min-width:0; }
+  .myform input::placeholder { color:var(--muted); }
+  .myform button { background:linear-gradient(135deg,#14532d,#4ade80); color:#06130b; border:none; border-radius:10px; padding:9px 16px; font-weight:700; font-size:12.5px; cursor:pointer; white-space:nowrap; }
+  .del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px; }
+  .del:hover { color:var(--red); }
+  .mynote { font-size:10.5px; color:var(--muted); margin-top:8px; line-height:1.6; }
+
+  /* 리포트 모달 */
+  .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:50; align-items:flex-start; justify-content:center; padding:34px 14px; overflow-y:auto; }
+  .overlay.show { display:flex; }
+  .modal { background:var(--panel); border:1px solid var(--line); border-radius:18px; max-width:720px; width:100%; padding:24px 26px; }
+  .modal .mhead { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:6px; }
+  .modal h3 { font-size:18px; font-weight:800; }
+  .modal .msub { font-size:11.5px; color:var(--muted); margin-bottom:14px; }
+  .modal .close { background:var(--card2); border:1px solid var(--line); color:var(--text); border-radius:10px; padding:6px 12px; cursor:pointer; font-size:12px; flex-shrink:0; }
+  .modal .sec { margin-bottom:14px; }
+  .modal .sec h4 { font-size:12.5px; color:var(--green); margin-bottom:5px; }
+  .modal .sec p { font-size:12.5px; line-height:1.75; color:var(--text); }
+  .modal .mfoot { font-size:10.5px; color:var(--muted); border-top:1px solid var(--line); padding-top:10px; margin-top:14px; line-height:1.6; }
 
   footer { font-size:10.5px; color:var(--muted); line-height:1.7; padding:16px 4px 30px; border-top:1px solid var(--line); margin-top:6px; }
 
-  /* ===== 모바일 ===== */
   @media (max-width: 920px) {
     .sidebar { display:none; }
     .main { padding:14px; }
     .row.r3, .row.r2 { grid-template-columns:1fr; }
     .search { display:none; }
     .mobilebrand { display:flex !important; }
+    .myform { grid-template-columns:1fr 1fr; }
+    .myform button { grid-column:1 / -1; }
   }
   .mobilebrand { display:none; align-items:center; gap:8px; margin-right:auto; }
   .mobilebrand .mark { width:30px; height:30px; border-radius:9px; background:linear-gradient(135deg,#14532d,#4ade80); display:flex; align-items:center; justify-content:center; font-weight:800; color:#06130b; font-size:12px; }
@@ -138,7 +156,6 @@
 <body>
 <div class="app">
 
-  <!-- ===== 사이드바 ===== -->
   <aside class="sidebar">
     <div class="logo">
       <div class="mark">10X</div>
@@ -147,9 +164,9 @@
     <div class="navtitle">RESEARCH</div>
     <nav class="nav">
       <a href="#top" class="on"><span class="dot"></span>대시보드</a>
-      <a href="#main10">주전 10종목</a>
-      <a href="#bench10">후보 10종목</a>
-      <a href="#journal">텐버 업무 일지 <span class="newtag">NEW</span></a>
+      <a href="#main10">주전 종목</a>
+      <a href="#bench10">추가 추천</a>
+      <a href="#mystocks">내 종목 <span class="newtag">NEW</span></a>
     </nav>
     <div class="navtitle">SYSTEM</div>
     <nav class="nav">
@@ -159,7 +176,6 @@
     <div class="side-note" id="sidenote"></div>
   </aside>
 
-  <!-- ===== 메인 ===== -->
   <main class="main" id="top">
     <div class="topbar">
       <div class="mobilebrand"><div class="mark">10X</div><b style="font-size:15px">JT Morgan 10X</b></div>
@@ -213,9 +229,9 @@
 
     <div class="row r2">
       <div class="card" id="main10">
-        <h2><span id="mainTitle">주전 종목</span> <span class="fn">기능 1 · 9</span></h2>
-        <div class="desc">기준가(2026-07-01 종가 · 전 종목 확정) 대비 2032-08-05까지 10배 — 게이지는 달성률 · GIC 심의 판정 병기</div>
-        <div class="tablewrap">
+        <h2><span id="mainTitle">주전 종목</span> <span class="fn">기능 1 · 9</span> <span class="clickhint">— 종목을 클릭하면 텐버 분석 리포트가 열립니다</span></h2>
+        <div class="desc">기준가(2026-07-01 종가 · 전 종목 확정) 대비 2032-08-05까지 10배 — 최대 10석, 결원은 의도적 공석(기준 미달 충원 금지) · 게이지는 달성률</div>
+        <div class="tablewrap scrolly">
           <table>
             <thead><tr><th>INSTRUMENT</th><th>분야</th><th>기준가</th><th>현재가</th><th>목표가</th><th>달성률</th><th>확신도</th></tr></thead>
             <tbody id="main10body"></tbody>
@@ -231,14 +247,26 @@
     </div>
 
     <div class="row r2">
-      <div class="card journal" id="journal">
-        <h2>텐버 업무 일지 <span class="fn">기능 2</span></h2>
-        <div class="desc">한 일 · 반성 · 다음 할 일</div>
-        <div id="journalbody"></div>
+      <div class="card" id="mystocks">
+        <h2>내 종목 <span class="fn">기능 6 · 10</span></h2>
+        <div class="desc">보유·관심 종목을 직접 입력하면 수익률과 10배 목표 대비 달성률을 계산합니다 (이 브라우저에만 저장)</div>
+        <div class="myform">
+          <input id="myName" placeholder="종목명 (예: 삼성전자)">
+          <input id="myBuy" type="number" placeholder="매수가 (원)">
+          <input id="myCur" type="number" placeholder="현재가 (원)">
+          <button id="myAdd">＋ 추가</button>
+        </div>
+        <div class="tablewrap">
+          <table style="min-width:560px">
+            <thead><tr><th>종목</th><th>매수가</th><th>현재가</th><th>수익률</th><th>10배 목표가</th><th>목표 달성률</th><th></th></tr></thead>
+            <tbody id="mybody"></tbody>
+          </table>
+        </div>
+        <div class="mynote">※ 현재가는 직접 입력·수정하는 값입니다(현재가 숫자를 클릭하면 수정). 자동 시세 연동은 향후 과제. 데이터는 이 기기의 브라우저에만 저장되며 텐버의 추천과 무관한 개인 기록입니다.</div>
       </div>
       <div class="card" id="bench10">
-        <h2><span id="benchTitle">후보</span> <span class="fn">기능 4</span></h2>
-        <div class="desc">승격 대기 · 강등 · 투기 버킷 격리 종목</div>
+        <h2><span id="benchTitle">추가 추천</span> <span class="fn">기능 4</span> <span class="clickhint">— 클릭 시 리포트</span></h2>
+        <div class="desc">승격 대기 · 강등 · 투기 버킷 격리 종목 — 주전 결원의 충원 후보군</div>
         <ul class="bench" id="bench10body"></ul>
       </div>
     </div>
@@ -247,41 +275,52 @@
   </main>
 </div>
 
+<!-- 종목 리포트 모달 -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="mhead">
+      <div>
+        <h3 id="mTitle"></h3>
+        <div class="msub" id="mSub"></div>
+      </div>
+      <button class="close" id="mClose">닫기 ✕</button>
+    </div>
+    <div id="mBody"></div>
+    <div class="mfoot">본 리포트는 텐버의 리서치 기록(강령 v1.1 기준 재심사 + GIC 4렌즈 심의)이며 투자 참고 자료입니다. 투자 권유가 아니며, 최종 판단과 책임은 투자자 본인에게 있습니다. 수치 기준일: 데이터 파일의 최근 업데이트 시점.</div>
+  </div>
+</div>
+
 <script src="data.js"></script>
 <script>
   const D = TENVER_DATA;
-  const won = n => n == null ? "—" : n.toLocaleString("ko-KR") + "원";
+  const won = n => n == null ? "—" : Number(n).toLocaleString("ko-KR") + "원";
+  const pct = n => (n >= 0 ? "+" : "") + n.toFixed(1) + "%";
 
-  // 사이드바 노트 (기능 12: 버전)
+  // 사이드바 (기능 12)
   document.getElementById("sidenote").innerHTML =
     `텐버 <b>${D.version}</b><br>업데이트 ${D.updatedAt}<br><br>${D.updateNote}`;
 
-  // 티커 스트립
+  // 티커
   document.getElementById("strip").innerHTML = D.market.map(m => `
     <div class="tick"><div class="n">${m.name}</div><div class="v">${m.value}</div>
     <div class="c ${m.dir}">${m.change}</div><div class="note">${m.note}</div></div>`).join("");
-
   document.getElementById("alert").textContent = D.alert;
 
-  // ---- 온도계 게이지 ----
-  const T = D.temperature;
-  const arcLen = 267; // 반원 호 길이
+  // 온도계
+  const T = D.temperature, arcLen = 267;
   document.getElementById("garc").style.strokeDashoffset = arcLen * (1 - T.score/100);
   document.getElementById("templabel").textContent = T.label;
   document.getElementById("tempscore").textContent = `${T.score} / 100`;
   document.getElementById("tempdate").textContent = `${T.asOf} 측정 — 민스키 국면 판정`;
-  document.getElementById("zones").innerHTML = T.zones.map(z =>
-    `<span class="${z===T.label?'cur':''}">${z}</span>`).join("");
+  document.getElementById("zones").innerHTML = T.zones.map(z => `<span class="${z===T.label?'cur':''}">${z}</span>`).join("");
   document.getElementById("temprules").innerHTML = T.rules.map(r => `<li>${r}</li>`).join("");
   document.getElementById("tempsummary").textContent = T.summary;
 
-  // ---- 연중 레인지 바 (저점 7477 ~ 고점 9000, 현재 7648) ----
+  // 연중 레인지 바
   (() => {
-    const lo = 7477, hi = 9000, cur = 7648, n = 40;
-    let html = "";
+    const lo = 7477, hi = 9000, cur = 7648, n = 40; let html = "";
     for (let i = 0; i < n; i++) {
-      const v = lo + (hi - lo) * i / (n - 1);
-      const h = 8 + 18 * i / (n - 1);
+      const v = lo + (hi - lo) * i / (n - 1), h = 8 + 18 * i / (n - 1);
       const isCur = Math.abs(v - cur) < (hi - lo) / n;
       const color = isCur ? "#4ade80" : (v < 7800 ? "#f87171" : v < 8400 ? "#fbbf24" : "#374440");
       html += `<i style="height:${h}px;background:${color}"></i>`;
@@ -289,16 +328,15 @@
     document.getElementById("rangebar").innerHTML = html;
   })();
 
-  // ---- KOSPI 확인 지점 차트 ----
+  // KOSPI 차트
   (() => {
-    const pts = D.kospiTrend.points;
-    const vals = pts.map(p => p.value);
+    const pts = D.kospiTrend.points, vals = pts.map(p => p.value);
     const min = Math.min(...vals) - 200, max = Math.max(...vals) + 200;
     const X = i => 25 + i * (280 / (pts.length - 1));
     const Y = v => 15 + (max - v) / (max - min) * 110;
     const line = pts.map((p, i) => `${X(i)},${Y(p.value)}`).join(" ");
     let svg = `<polyline points="${line}" fill="none" stroke="#4ade80" stroke-width="2"/>`;
-    svg += `<polygon points="${X(0)},${Y(vals[0])} ${line} ${X(pts.length-1)},135 ${X(0)},135" fill="rgba(74,222,128,.07)" stroke="none"/>`;
+    svg += `<polygon points="${X(0)},${Y(vals[0])} ${line} ${X(pts.length-1)},135 ${X(0)},135" fill="rgba(74,222,128,.07)"/>`;
     pts.forEach((p, i) => {
       svg += `<circle class="pt" cx="${X(i)}" cy="${Y(p.value)}" r="3"/>`;
       svg += `<text class="axis" x="${X(i)}" y="147" text-anchor="middle">${p.label}</text>`;
@@ -308,22 +346,38 @@
     document.getElementById("chartnote").textContent = D.kospiTrend.note;
   })();
 
-  // ---- 주전 10 테이블 ----
-  document.getElementById("main10body").innerHTML = D.main10.map(s => {
-    const pct = (s.currentPrice ?? s.basePrice) / s.targetPrice * 100;
+  // ---- 리포트 모달 ----
+  const overlay = document.getElementById("overlay");
+  function openReport(kind, idx) {
+    const s = (kind === "main" ? D.main10 : D.bench10)[idx];
+    if (!s || !s.report) return;
+    document.getElementById("mTitle").textContent = `${s.name} (${s.code})`;
+    document.getElementById("mSub").textContent = kind === "main"
+      ? `${s.sector} · 기준가 ${won(s.basePrice)} → 목표가 ${won(s.targetPrice)} · 현재가 ${won(s.currentPrice)} · 확신도 ${s.confidence}`
+      : (s.note || "");
+    document.getElementById("mBody").innerHTML = s.report.map(sec =>
+      `<div class="sec"><h4>${sec.h}</h4><p>${sec.p}</p></div>`).join("");
+    overlay.classList.add("show");
+  }
+  document.getElementById("mClose").onclick = () => overlay.classList.remove("show");
+  overlay.onclick = e => { if (e.target === overlay) overlay.classList.remove("show"); };
+
+  // ---- 주전 테이블 (최대 10석 스크롤, 클릭 리포트) ----
+  document.getElementById("main10body").innerHTML = D.main10.map((s, i) => {
+    const p = (s.currentPrice ?? s.basePrice) / s.targetPrice * 100;
     const badge = s.confidence === "상" ? "b-high" : "b-mid";
-    return `<tr>
-      <td class="stock">${s.name}${s.starred ? " ★" : ""}<br><span class="code">${s.code} · ${s.thesis}</span></td>
+    return `<tr class="clickable" onclick="openReport('main',${i})">
+      <td class="stock">${s.name}<br><span class="code">${s.code} · ${s.thesis}</span></td>
       <td style="font-size:11px;color:var(--muted);white-space:nowrap">${s.sector}</td>
       <td class="num">${won(s.basePrice)}</td>
-      <td class="num">${s.currentPrice ? won(s.currentPrice) : "<span style='color:var(--muted)'>재심사 중</span>"}</td>
+      <td class="num">${s.currentPrice ? won(s.currentPrice) : "<span style='color:var(--muted)'>점검 대기</span>"}</td>
       <td class="num" style="color:var(--green)">${won(s.targetPrice)}</td>
-      <td><div class="pgauge"><div class="bar"><div class="fill" style="width:${Math.min(100,pct).toFixed(1)}%"></div></div><div class="lbl">${pct.toFixed(1)}%</div></div></td>
+      <td><div class="pgauge"><div class="bar"><div class="fill" style="width:${Math.min(100,p).toFixed(1)}%"></div></div><div class="lbl">${p.toFixed(1)}%</div></div></td>
       <td><span class="badge ${badge}">${s.confidence}</span></td>
     </tr>`;
   }).join("");
 
-  // ---- 분야별 노출 바 (main10에서 자동 집계) ----
+  // ---- 분야별 노출 ----
   (() => {
     const cnt = {};
     D.main10.forEach(s => cnt[s.sector] = (cnt[s.sector] || 0) + 1);
@@ -338,15 +392,59 @@
       `최대 집중: <b>${maxSec[0]} ${maxSec[1]}종목</b> — 강령 상한(동일 테마 5종목) ${maxSec[1] <= 5 ? "이내 ✓" : "초과 ⚠️"}`;
   })();
 
-  // ---- 동적 카운트 (하드코딩 방지) ----
+  // ---- 동적 카운트 ----
   document.getElementById("mainTitle").textContent = `주전 ${D.main10.length}종목 (결원 ${10 - D.main10.length}석)`;
-  document.getElementById("benchTitle").textContent = `후보·격리 ${D.bench10.length}종목`;
+  document.getElementById("benchTitle").textContent = `추가 추천 ${D.bench10.length}종목`;
 
-  // ---- 후보 10 / 일지 / 면책 ----
-  document.getElementById("bench10body").innerHTML = D.bench10.map(b =>
-    `<li><span class="bn">${b.name} <span style="color:var(--muted);font-weight:400;font-size:10.5px">${b.code}</span></span><span class="bnote">${b.note}</span></li>`).join("");
-  document.getElementById("journalbody").innerHTML = D.journal.map(j =>
-    `<div class="entry"><div class="jd">${j.date}</div><div class="jt">${j.title}</div><div class="jb">${j.body}</div></div>`).join("");
+  // ---- 추가 추천 (클릭 리포트) ----
+  document.getElementById("bench10body").innerHTML = D.bench10.map((b, i) =>
+    `<li onclick="openReport('bench',${i})"><span class="bn">${b.name} <span style="color:var(--muted);font-weight:400;font-size:10.5px">${b.code}</span></span><span class="bnote">${b.note}</span></li>`).join("");
+
+  // ---- 내 종목 계산기 (기능 6·10, localStorage) ----
+  const LS_KEY = "tenver_my_stocks_v1";
+  const loadMy = () => { try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch { return []; } };
+  const saveMy = list => localStorage.setItem(LS_KEY, JSON.stringify(list));
+
+  function renderMy() {
+    const list = loadMy();
+    const body = document.getElementById("mybody");
+    if (!list.length) {
+      body.innerHTML = `<tr><td colspan="7" style="color:var(--muted);font-size:12px">아직 입력된 종목이 없습니다 — 위에서 종목명·매수가·현재가를 입력하고 '추가'를 눌러보세요.</td></tr>`;
+      return;
+    }
+    body.innerHTML = list.map((s, i) => {
+      const ret = (s.cur / s.buy - 1) * 100;
+      const target = s.buy * 10;
+      const ach = s.cur / target * 100;
+      return `<tr>
+        <td class="stock">${s.name}</td>
+        <td class="num">${won(s.buy)}</td>
+        <td class="num" style="cursor:pointer;text-decoration:underline dotted" title="클릭해서 현재가 수정" onclick="editCur(${i})">${won(s.cur)}</td>
+        <td class="num ${ret >= 0 ? "up" : "down"}">${pct(ret)}</td>
+        <td class="num" style="color:var(--green)">${won(target)}</td>
+        <td><div class="pgauge"><div class="bar"><div class="fill" style="width:${Math.min(100,ach).toFixed(1)}%"></div></div><div class="lbl">${ach.toFixed(1)}% / 100%</div></div></td>
+        <td><button class="del" title="삭제" onclick="delMy(${i})">✕</button></td>
+      </tr>`;
+    }).join("");
+  }
+  window.delMy = i => { const l = loadMy(); l.splice(i, 1); saveMy(l); renderMy(); };
+  window.editCur = i => {
+    const l = loadMy();
+    const v = prompt(`${l[i].name}의 현재가를 입력하세요 (원)`, l[i].cur);
+    const n = Number(v);
+    if (v !== null && n > 0) { l[i].cur = n; saveMy(l); renderMy(); }
+  };
+  document.getElementById("myAdd").onclick = () => {
+    const name = document.getElementById("myName").value.trim();
+    const buy = Number(document.getElementById("myBuy").value);
+    const cur = Number(document.getElementById("myCur").value);
+    if (!name || !(buy > 0) || !(cur > 0)) { alert("종목명, 매수가, 현재가를 모두 입력해 주세요."); return; }
+    const l = loadMy(); l.push({ name, buy, cur }); saveMy(l);
+    document.getElementById("myName").value = ""; document.getElementById("myBuy").value = ""; document.getElementById("myCur").value = "";
+    renderMy();
+  };
+  renderMy();
+
   document.getElementById("disclaimer").textContent = D.disclaimer;
 </script>
 </body>

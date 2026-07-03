@@ -236,15 +236,15 @@
 
       <div class="card">
         <h2>Stock exchange <span class="fn">기능 5</span></h2>
-        <div class="desc">KOSPI · 2026-07-02 종가</div>
-        <div class="bigval">7,648.09</div>
-        <div class="bigsub down">▼ 655.32 (-7.89%) — 8,000선 붕괴</div>
+        <div class="desc" id="exDate">KOSPI · 2026-07-02 종가</div>
+        <div class="bigval" id="exVal">7,648.09</div>
+        <div class="bigsub down" id="exSub">▼ 655.32 (-7.89%) — 8,000선 붕괴</div>
         <div class="rangebar" id="rangebar"></div>
-        <div class="desc" style="margin-bottom:10px">연중 확인 범위: 7,477 (6/8 장중) ~ 9,000 (6월 중순 장중)</div>
-        <div class="kv"><span class="k">KOSDAQ 종가</span><span class="down">866.72 (-6.74%)</span></div>
-        <div class="kv"><span class="k">외국인 (연초 이후)</span><span class="down">-150.7조 순매도</span></div>
-        <div class="kv"><span class="k">개인 (7/2)</span><span class="up">+5.4조 순매수</span></div>
-        <div class="kv"><span class="k">이상 신호</span><span class="warn">사이드카 · 6월 CB 3회</span></div>
+        <div class="desc" style="margin-bottom:10px" id="exRange">연중 확인 범위: 7,477 (6/8 장중) ~ 9,000 (6월 중순 장중)</div>
+        <div class="kv"><span class="k">KOSDAQ 종가</span><span class="down" id="exKosdaq">866.72 (-6.74%)</span></div>
+        <div class="kv"><span class="k">원/달러</span><span id="exFx">1,552.3</span></div>
+        <div class="kv"><span class="k">외국인 (연초 이후)</span><span class="down">-150.7조 순매도 <span style="color:var(--muted);font-size:10px">· 주간 갱신</span></span></div>
+        <div class="kv"><span class="k">이상 신호</span><span class="warn">사이드카 · 6월 CB 3회 <span style="color:var(--muted);font-size:10px">· 주간 갱신</span></span></div>
       </div>
 
       <div class="card" id="assetCard">
@@ -393,11 +393,45 @@
   document.getElementById("sidenote").innerHTML =
     `텐버 <b>${D.version}</b><br>업데이트 ${D.updatedAt}<br><br>${D.updateNote}`;
 
+  // 시장 지표 자동 갱신 (prices.js의 TENVER_MARKET — 시세 로봇이 하루 5회 생성)
+  const M = (typeof TENVER_MARKET !== "undefined") ? TENVER_MARKET : null;
+  const fm = (n, d) => Number(n).toLocaleString("ko-KR", {minimumFractionDigits: d, maximumFractionDigits: d});
+  if (M && M.kospi) {
+    const liveMap = {"KOSPI": [M.kospi, 2], "KOSDAQ": [M.kosdaq, 2], "원/달러": [M.usdkrw, 1]};
+    D.market.forEach(m => {
+      const hit = liveMap[m.name];
+      if (!hit) return;
+      const [L, dp] = hit, up = L.chg >= 0;
+      m.value = fm(L.c, dp);
+      m.change = `${up ? "▲ +" : "▼ "}${fm(L.chg, dp)} (${up ? "+" : ""}${fm(L.pct, 2)}%)`;
+      m.dir = up ? "up" : "down";
+      m.note = `${M.asOf} 자동`;
+    });
+  }
+
   // 티커
   document.getElementById("strip").innerHTML = D.market.map(m => `
     <div class="tick"><div class="n">${m.name}</div><div class="v">${m.value}</div>
     <div class="c ${m.dir}">${m.change}</div><div class="note">${m.note}</div></div>`).join("");
   document.getElementById("alert").textContent = D.alert;
+
+  // Stock exchange 카드 자동 갱신
+  if (M && M.kospi) {
+    const k = M.kospi, q = M.kosdaq, up = k.chg >= 0, qup = q.chg >= 0;
+    document.getElementById("exDate").textContent = `KOSPI · ${M.asOf} 기준 (자동 갱신)`;
+    document.getElementById("exVal").textContent = fm(k.c, 2);
+    const sub = document.getElementById("exSub");
+    sub.className = "bigsub " + (up ? "up" : "down");
+    sub.textContent = `${up ? "▲ +" : "▼ "}${fm(Math.abs(k.chg), 2)} (${up ? "+" : ""}${fm(k.pct, 2)}%)`;
+    const kd = document.getElementById("exKosdaq");
+    kd.className = qup ? "up" : "down";
+    kd.textContent = `${fm(q.c, 2)} (${qup ? "+" : ""}${fm(q.pct, 2)}%)`;
+    const fx = document.getElementById("exFx"), fup = M.usdkrw.chg >= 0;
+    fx.className = fup ? "up" : "down";
+    fx.textContent = `${fm(M.usdkrw.c, 1)} (${fup ? "+" : ""}${fm(M.usdkrw.pct, 2)}%)`;
+    if (k.lo && k.hi) document.getElementById("exRange").textContent =
+      `연중 종가 범위: ${fm(k.lo, 2)} ~ ${fm(k.hi, 2)} · KOSDAQ ${fm(q.lo, 2)} ~ ${fm(q.hi, 2)}`;
+  }
 
   // 온도계
   const T = D.temperature, arcLen = 267;
@@ -409,13 +443,16 @@
   document.getElementById("temprules").innerHTML = T.rules.map(r => `<li>${r}</li>`).join("");
   document.getElementById("tempsummary").textContent = T.summary;
 
-  // 연중 레인지 바
+  // 연중 레인지 바 (자동 지표가 있으면 실측 종가 범위 사용)
   (() => {
-    const lo = 7477, hi = 9000, cur = 7648, n = 40; let html = "";
+    const live = M && M.kospi && M.kospi.lo ? M.kospi : null;
+    const lo = live ? live.lo : 7477, hi = live ? live.hi : 9000, cur = live ? live.c : 7648;
+    const n = 40; let html = "";
+    const z1 = lo + (hi - lo) * 0.25, z2 = lo + (hi - lo) * 0.6;
     for (let i = 0; i < n; i++) {
       const v = lo + (hi - lo) * i / (n - 1), h = 8 + 18 * i / (n - 1);
       const isCur = Math.abs(v - cur) < (hi - lo) / n;
-      const color = isCur ? "#4ade80" : (v < 7800 ? "#f87171" : v < 8400 ? "#fbbf24" : "#374440");
+      const color = isCur ? "#4ade80" : (v < z1 ? "#f87171" : v < z2 ? "#fbbf24" : "#374440");
       html += `<i style="height:${h}px;background:${color}"></i>`;
     }
     document.getElementById("rangebar").innerHTML = html;

@@ -250,7 +250,7 @@
       </div>
     </div>
 
-    <div class="row r2">
+    <div class="row">
       <div class="card" id="main10">
         <h2><span id="mainTitle">주전 종목</span> <span class="fn">기능 1 · 9</span> <span class="clickhint">— 종목을 클릭하면 텐버 분석 리포트가 열립니다</span></h2>
         <div class="desc">기준가(2026-07-01 종가 · 전 종목 확정) 대비 2032-08-05까지 10배 — 최대 10석, 결원은 의도적 공석(기준 미달 충원 금지) · 게이지는 달성률</div>
@@ -260,12 +260,6 @@
             <tbody id="main10body"></tbody>
           </table>
         </div>
-      </div>
-      <div class="card">
-        <h2>분야별 노출 <span class="fn">Strength meter</span></h2>
-        <div class="desc">주전 종목의 섹터 분포 — 같은 테마 5종목 초과 금지 (강령 제2장 2조)</div>
-        <div class="bars" id="sectorbars"></div>
-        <div class="side-note" style="margin-top:14px" id="concnote"></div>
       </div>
     </div>
 
@@ -455,20 +449,7 @@
     </tr>`;
   }).join("");
 
-  // ---- 분야별 노출 ----
-  (() => {
-    const cnt = {};
-    D.main10.forEach(s => cnt[s.sector] = (cnt[s.sector] || 0) + 1);
-    const entries = Object.entries(cnt).sort((a,b) => b[1]-a[1]);
-    const maxN = entries[0][1];
-    document.getElementById("sectorbars").innerHTML = entries.map(([sec, n]) => `
-      <div class="brow"><div class="bname">${sec}</div>
-      <div class="btrack"><div class="bfill" style="width:${n/maxN*100}%"></div></div>
-      <div class="bval">${n}종목 (${(n/D.main10.length*100).toFixed(0)}%)</div></div>`).join("");
-    const maxSec = entries[0];
-    document.getElementById("concnote").innerHTML =
-      `최대 집중: <b>${maxSec[0]} ${maxSec[1]}종목</b> — 강령 상한(동일 테마 5종목) ${maxSec[1] <= 5 ? "이내 ✓" : "초과 ⚠️"}`;
-  })();
+  // (분야별 노출 카드는 v1.2에서 삭제 — 섹터 집중 상한 점검은 텐버가 원장·정기 점검에서 수행)
 
   // ---- 동적 카운트 ----
   document.getElementById("mainTitle").textContent = `주전 ${D.main10.length}종목 (결원 ${10 - D.main10.length}석)`;

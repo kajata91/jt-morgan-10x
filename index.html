@@ -147,6 +147,18 @@
   .modal .sec p { font-size:12.5px; line-height:1.75; color:var(--text); }
   .modal .mfoot { font-size:10.5px; color:var(--muted); border-top:1px solid var(--line); padding-top:10px; margin-top:14px; line-height:1.6; }
 
+  /* 잠금 게이트 */
+  .gatewrap { position:fixed; inset:0; background:var(--bg); z-index:100; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .gatebox { width:100%; max-width:360px; background:var(--card); border:1px solid var(--line); border-radius:18px; padding:28px; text-align:center; }
+  .gatebox .mark { width:44px; height:44px; border-radius:13px; background:linear-gradient(135deg,#14532d,#4ade80); display:inline-flex; align-items:center; justify-content:center; font-weight:800; color:#06130b; }
+  .gatebox h3 { font-size:17px; margin:12px 0 4px; }
+  .gatebox p { font-size:12px; color:var(--muted); margin-bottom:16px; }
+  .gatebox input[type=password] { width:100%; background:var(--card2); border:1px solid var(--line); border-radius:10px; padding:11px 14px; color:var(--text); font-size:14px; margin-bottom:10px; }
+  .gatebox label { font-size:11.5px; color:var(--muted); display:flex; gap:6px; justify-content:center; margin-bottom:12px; }
+  .gatebox button { width:100%; background:linear-gradient(135deg,#14532d,#4ade80); border:none; border-radius:10px; padding:11px; color:#06130b; font-weight:800; font-size:14px; cursor:pointer; }
+  .gateerr { color:var(--red); font-size:12px; margin-top:10px; min-height:16px; }
+  .gatefoot { font-size:10px; color:var(--muted); margin-top:12px; line-height:1.6; }
+
   footer { font-size:10.5px; color:var(--muted); line-height:1.7; padding:16px 4px 30px; border-top:1px solid var(--line); margin-top:6px; }
 
   @media (max-width: 920px) {
@@ -181,6 +193,7 @@
     <nav class="nav">
       <a href="#temp">시장 온도계</a>
       <a href="https://github.com/kajata91/jt-morgan-10x" target="_blank">GitHub 저장소</a>
+      <a href="#" onclick="gateLock();return false">🔒 잠그기</a>
     </nav>
     <div class="side-note" id="sidenote"></div>
   </aside>
@@ -302,10 +315,62 @@
   </div>
 </div>
 
-<script src="data.js"></script>
+<!-- 잠금 게이트 (비밀번호 입력 전에는 아무 데이터도 표시되지 않음) -->
+<div class="gatewrap" id="gate">
+  <div class="gatebox">
+    <div class="mark">10X</div>
+    <h3>JT Morgan 10X — 텐버</h3>
+    <p>비공개 대시보드입니다. 비밀번호를 입력하세요.</p>
+    <input type="password" id="gatePass" placeholder="비밀번호" autocomplete="current-password">
+    <label><input type="checkbox" id="gateRemember"> 이 기기에서 기억하기</label>
+    <button id="gateBtn">열기</button>
+    <div class="gateerr" id="gateErr"></div>
+    <div class="gatefoot">모든 리서치 데이터는 AES-256-GCM으로 암호화되어 있으며, 비밀번호 없이는 누구도 열람할 수 없습니다. '내 종목' 입력값은 이 기기의 브라우저에만 저장됩니다.</div>
+  </div>
+</div>
+
+<script src="data.enc.js"></script>
 <script src="prices.js"></script>
 <script>
-  const D = TENVER_DATA;
+  // ================= 잠금 게이트 (AES-256-GCM + PBKDF2) =================
+  const GATE_LS = "tenver_gate_pass";
+  async function tryUnlock(pass) {
+    const E = TENVER_DATA_ENC;
+    const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+    const keyMat = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+    const key = await crypto.subtle.deriveKey(
+      { name: "PBKDF2", salt: b64(E.salt), iterations: E.iter, hash: "SHA-256" },
+      keyMat, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(E.iv) }, key, b64(E.ct));
+    // 복호화된 data.js를 실행하고, eval 스코프 안에서 전역으로 넘긴다 (const는 eval 밖으로 새지 않음)
+    (0, eval)(new TextDecoder().decode(pt) + "\n;window.TENVER_DATA = TENVER_DATA;");
+  }
+  async function gateSubmit() {
+    const pass = document.getElementById("gatePass").value;
+    const err = document.getElementById("gateErr");
+    err.textContent = "확인 중…";
+    try {
+      await tryUnlock(pass);
+      if (document.getElementById("gateRemember").checked) localStorage.setItem(GATE_LS, pass);
+      document.getElementById("gate").style.display = "none";
+      err.textContent = "";
+      initDashboard();
+    } catch (e) { err.textContent = "비밀번호가 올바르지 않습니다."; }
+  }
+  window.gateLock = () => { localStorage.removeItem(GATE_LS); location.reload(); };
+  window.addEventListener("DOMContentLoaded", async () => {
+    document.getElementById("gateBtn").onclick = gateSubmit;
+    document.getElementById("gatePass").addEventListener("keydown", e => { if (e.key === "Enter") gateSubmit(); });
+    const saved = localStorage.getItem(GATE_LS);
+    if (saved) {
+      try { await tryUnlock(saved); document.getElementById("gate").style.display = "none"; initDashboard(); }
+      catch (e) { localStorage.removeItem(GATE_LS); }
+    }
+  });
+
+  // ================= 대시보드 본체 (복호화 후에만 실행) =================
+  function initDashboard() {
+  const D = window.TENVER_DATA;
   const P = (typeof TENVER_PRICES !== "undefined") ? TENVER_PRICES : null;
   const won = n => n == null ? "—" : Number(n).toLocaleString("ko-KR") + "원";
   const pct = n => (n >= 0 ? "+" : "") + n.toFixed(1) + "%";
@@ -379,6 +444,7 @@
   }
   document.getElementById("mClose").onclick = () => overlay.classList.remove("show");
   overlay.onclick = e => { if (e.target === overlay) overlay.classList.remove("show"); };
+  window.openReport = openReport;
 
   // ---- 주전 테이블 (최대 10석 스크롤, 클릭 리포트) ----
   document.getElementById("main10body").innerHTML = D.main10.map((s, i) => {
@@ -518,6 +584,7 @@
   renderMy();
 
   document.getElementById("disclaimer").textContent = D.disclaimer;
+  } // ================= initDashboard 끝 =================
 </script>
 </body>
 </html>

@@ -385,7 +385,7 @@
       <button class="close" id="mClose">닫기 ✕</button>
     </div>
     <div id="mBody"></div>
-    <div class="mfoot">본 리포트는 텐버의 리서치 기록(강령 v1.1 기준 재심사 + GIC 4렌즈 심의)이며 투자 참고 자료입니다. 투자 권유가 아니며, 최종 판단과 책임은 투자자 본인에게 있습니다. 수치 기준일: 데이터 파일의 최근 업데이트 시점.</div>
+    <div class="mfoot">본 리포트는 텐버의 리서치 기록(강령 v1.2 + 실전 기법서 적용, GIC 4렌즈 심의)이며 투자 참고 자료입니다. 투자 권유가 아니며, 최종 판단과 책임은 투자자 본인에게 있습니다. 수치 기준일: 데이터 파일의 최근 업데이트 시점.</div>
   </div>
 </div>
 
@@ -426,11 +426,11 @@
     err.textContent = "확인 중…";
     try {
       await tryUnlock(pass);
-      if (document.getElementById("gateRemember").checked) localStorage.setItem(GATE_LS, pass);
-      document.getElementById("gate").style.display = "none";
-      err.textContent = "";
-      initDashboard();
-    } catch (e) { err.textContent = "비밀번호가 올바르지 않습니다."; }
+    } catch (e) { err.textContent = "비밀번호가 올바르지 않습니다."; return; }
+    if (document.getElementById("gateRemember").checked) localStorage.setItem(GATE_LS, pass);
+    document.getElementById("gate").style.display = "none";
+    err.textContent = "";
+    try { initDashboard(); } catch (e) { console.error(e); alert("대시보드 렌더링 중 오류가 발생했습니다 (비밀번호는 정상):\n" + e.message); }
   }
   window.gateLock = () => { localStorage.removeItem(GATE_LS); location.reload(); };
   window.addEventListener("DOMContentLoaded", async () => {
@@ -438,8 +438,13 @@
     document.getElementById("gatePass").addEventListener("keydown", e => { if (e.key === "Enter") gateSubmit(); });
     const saved = localStorage.getItem(GATE_LS);
     if (saved) {
-      try { await tryUnlock(saved); document.getElementById("gate").style.display = "none"; initDashboard(); }
+      let ok = false;
+      try { await tryUnlock(saved); ok = true; }
       catch (e) { localStorage.removeItem(GATE_LS); }
+      if (ok) {
+        document.getElementById("gate").style.display = "none";
+        try { initDashboard(); } catch (e) { console.error(e); alert("대시보드 렌더링 중 오류가 발생했습니다 (비밀번호는 정상):\n" + e.message); }
+      }
     }
   });
 
@@ -450,6 +455,7 @@
   const won = n => n == null ? "—" : Number(n).toLocaleString("ko-KR") + "원";
   const pct = n => (n >= 0 ? "+" : "") + n.toFixed(1) + "%";
   const livePrice = code => (P && code && P.items[code]) ? P.items[code].p : null;
+  const localISO = ts => { const d = new Date(ts); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
 
   // 자동 시세를 주전·추가 추천 현재가에 반영 (data.js 값은 폴백)
   if (P) { D.main10.forEach(s => { const q = livePrice(s.code); if (q) s.currentPrice = q; }); }
@@ -468,7 +474,7 @@
       if (!hit) return;
       const [L, dp] = hit, up = L.chg >= 0;
       m.value = fm(L.c, dp);
-      m.change = `${up ? "▲ +" : "▼ "}${fm(L.chg, dp)} (${up ? "+" : ""}${fm(L.pct, 2)}%)`;
+      m.change = `${up ? "▲ +" : "▼ "}${fm(Math.abs(L.chg), dp)} (${up ? "+" : ""}${fm(L.pct, 2)}%)`;
       m.dir = up ? "up" : "down";
       m.note = `${M.asOf} 자동`;
     });
@@ -571,7 +577,7 @@
   document.getElementById("priceAsOf").textContent = P ? `시세 기준: ${P.asOf} (${P.count.toLocaleString()}종목 자동)` : "시세 파일 미수신 — 수동 입력 모드";
 
   const LS_KEY = "tenver_my_stocks_v2";
-  const loadMy = () => { try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch { return []; } };
+  const loadMy = () => { try { const v = JSON.parse(localStorage.getItem(LS_KEY)); return Array.isArray(v) ? v : []; } catch { return []; } };
   const saveMy = list => localStorage.setItem(LS_KEY, JSON.stringify(list));
   // v1 → v2 마이그레이션 (기존 입력 보존)
   (() => { try {
@@ -593,7 +599,6 @@
     let hits = [];
     for (const [code, it] of Object.entries(P.items)) {
       if (it.n.includes(q) || code.startsWith(q)) hits.push([code, it]);
-      if (hits.length >= 60) break;
     }
     // 정확 일치 > 이름 시작 일치 > 짧은 이름 순 (ETF·ETN보다 본주 우선)
     hits.sort((a, b) => {
@@ -618,8 +623,8 @@
   const HIST_KEY = "tenver_asset_history";
   function updateAssetCard() {
     const list = loadMy();
-    let buySum = 0, evalSum = 0;
-    list.forEach(s => { const q = s.qty || 1; buySum += s.buy * q; const c = effCur(s); if (c > 0) evalSum += c * q; });
+    let buySum = 0, evalSum = 0, pricedCnt = 0;
+    list.forEach(s => { const q = s.qty || 1; buySum += s.buy * q; const c = effCur(s); if (c > 0) { evalSum += c * q; pricedCnt++; } });
     const target = buySum * 10;
     const ach = target > 0 ? evalSum / target * 100 : 0;
     const nums = document.getElementById("assetNums");
@@ -629,13 +634,17 @@
       document.getElementById("assetNote").textContent = "";
       return;
     }
+    if (!pricedCnt || evalSum <= 0) {
+      nums.innerHTML = `<span style="color:var(--amber);font-size:12px">시세 미수신 상태입니다 — 스냅샷을 기록하지 않고 이전 궤적을 보존합니다. 잠시 후 새로고침해 주세요.</span>`;
+      return;
+    }
     nums.innerHTML =
       `<span><div style="font-size:10px;color:var(--muted)">현재 자산</div><div style="font-size:19px;font-weight:800">${Math.round(evalSum).toLocaleString()}원</div></span>` +
       `<span><div style="font-size:10px;color:var(--muted)">10배 목표액</div><div style="font-size:19px;font-weight:800;color:var(--green)">${Math.round(target).toLocaleString()}원</div></span>` +
       `<span><div style="font-size:10px;color:var(--muted)">목표 달성률</div><div style="font-size:19px;font-weight:800;color:var(--amber)">${ach.toFixed(1)}%</div></span>`;
     // 오늘 스냅샷 기록 (하루 1개, 같은 날은 최신값으로 갱신)
-    let hist = []; try { hist = JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch {}
-    const today = new Date().toISOString().slice(0, 10);
+    let hist = []; try { const v = JSON.parse(localStorage.getItem(HIST_KEY)); hist = Array.isArray(v) ? v : []; } catch {}
+    const today = localISO(Date.now());
     hist = hist.filter(h => h.d !== today);
     hist.push({ d: today, e: Math.round(evalSum), b: Math.round(buySum) });
     hist.sort((a, b) => a.d < b.d ? -1 : 1);
@@ -737,11 +746,11 @@
     const body = document.getElementById("mybody");
     renderSummary(list);
     updateAssetCard();
+    renderPortPeriods(list);
     if (!list.length) {
       body.innerHTML = `<tr><td colspan="10" style="color:var(--muted);font-size:12px">아직 입력된 종목이 없습니다 — 종목명(주식·ETF·ETN)을 검색해 선택하고 매수가·주식수를 입력한 뒤 '추가'를 눌러보세요.</td></tr>`;
       return;
     }
-    renderPortPeriods(list);
     body.innerHTML = list.map((s, i) => {
       const cur = effCur(s);
       const hasCur = cur != null && cur > 0;
@@ -808,7 +817,7 @@
 
   // ---- 종목 상담 (기능: 보고서 열람 + 상담 대기함) ----
   const CS_LS = "tenver_consult_queue";
-  const loadQ = () => { try { return JSON.parse(localStorage.getItem(CS_LS)) || []; } catch { return []; } };
+  const loadQ = () => { try { const v = JSON.parse(localStorage.getItem(CS_LS)); return Array.isArray(v) ? v : []; } catch { return []; } };
   const saveQ = q => localStorage.setItem(CS_LS, JSON.stringify(q));
   const consults = D.consults || [];
   function reportIndex() {
@@ -841,7 +850,7 @@
     const hit = reportIndex().find(h => (code && h.code === code) || h.name === name);
     if (hit) { openAnyReport(hit); return; }
     const q = loadQ();
-    if (!q.find(r => r.name === name)) { q.push({ name, code: code || null, date: new Date().toISOString().slice(0, 10) }); saveQ(q); }
+    if (!q.find(r => r.name === name)) { q.push({ name, code: code || null, date: localISO(Date.now()) }); saveQ(q); }
     renderConsult();
     document.getElementById("consult").scrollIntoView({ behavior: "smooth" });
     alert(`'${name}' 상담이 대기함에 등록되었습니다.\n\nClaude Code에서 텐버에게 "종목 상담: ${name}"이라고 지시하시면, 강령·기법서 전체를 적용한 기관급 심층 보고서를 작성해 이 화면에 등록합니다.`);
@@ -858,7 +867,6 @@
       let hits = [];
       for (const [code, it] of Object.entries(P.items)) {
         if (it.n.includes(qv) || code.startsWith(qv)) hits.push([code, it]);
-        if (hits.length >= 40) break;
       }
       hits.sort((a, b) => {
         const ra = a[1].n === qv ? 0 : a[1].n.startsWith(qv) ? 1 : 2;
@@ -940,7 +948,6 @@
       let hits = [];
       if (P) for (const [code, it] of Object.entries(P.items)) {
         if (it.n.includes(qv) || code.startsWith(qv)) hits.push({ t: "kr", code, name: it.n, sub: `${code} · ${won(it.p)}` });
-        if (hits.length >= 30) break;
       }
       ((D.topguns || {}).pairs || []).forEach(p => {
         if (p.usTicker.startsWith(qv.toUpperCase()) || p.us.toUpperCase().includes(qv.toUpperCase())) hits.push({ t: "us", code: null, name: p.usTicker, sub: `${p.us} ↔ ${p.kr}` });
@@ -992,8 +999,8 @@
   function renderPortPeriods(list) {
     const box = document.getElementById("portPeriods");
     if (!P || !list.length) { box.style.display = "none"; return; }
-    let h = {}; try { h = JSON.parse(localStorage.getItem(PH_KEY)) || {}; } catch {}
-    const today = new Date().toISOString().slice(0, 10);
+    let h = {}; try { const v = JSON.parse(localStorage.getItem(PH_KEY)); h = (v && typeof v === "object" && !Array.isArray(v)) ? v : {}; } catch {}
+    const today = localISO(Date.now());
     let tot = 0;
     list.forEach(s => { const c = effCur(s); if (c > 0) tot += c * (s.qty || 1); });
     if (tot > 0) { h[today] = { t: Math.round(tot) }; localStorage.setItem(PH_KEY, JSON.stringify(h)); }
@@ -1001,7 +1008,7 @@
     if (!dates.length) { box.style.display = "none"; return; }
     const cur = h[dates[dates.length - 1]].t;
     const chips = [["일간", 1], ["주간", 7], ["월간", 30], ["분기", 91], ["연간", 365]].map(([lab, days]) => {
-      const target = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+      const target = localISO(Date.now() - days * 86400000);
       const past = dates.filter(d => d <= target).pop();
       if (!past || !h[past].t) return `<span><span style="color:var(--muted)">${lab}</span> <b style="color:var(--muted);font-weight:500">축적 중</b></span>`;
       const chg = (cur / h[past].t - 1) * 100;
@@ -1051,7 +1058,7 @@
     const l = loadMy();
     const v = prompt(`${l[i].name}의 현재가를 수동 입력하세요 (원)\n빈 값으로 확인하면 자동 시세로 되돌아갑니다.`, effCur(l[i]) ?? "");
     if (v === null) return;
-    const n = Number(v);
+    const n = Number(String(v).replace(/[, ]/g, ""));
     if (v.trim() === "") delete l[i].curManual;
     else if (n > 0) l[i].curManual = n;
     saveMy(l); renderMy();

@@ -19,8 +19,9 @@ def num(v):
     except (ValueError, TypeError):
         return 0.0
 
-ETP_WORDS = ("KODEX", "TIGER", "RISE", "PLUS", "ACE", "SOL", "KIWOOM", "HANARO", "WON",
-             "레버리지", "인버스", "ETN", "채권", "선물", "스팩", "단일종목", "TOP10", "액티브")
+ETP_BRANDS = {"KODEX", "TIGER", "RISE", "PLUS", "ACE", "SOL", "KIWOOM", "HANARO", "WON",
+              "UNICORN", "KOACT", "BNK", "DAISHIN343", "1Q", "ARIRANG", "KTOP"}  # 첫 토큰 정확 일치만 (YG PLUS 오탐 방지)
+ETP_KEYWORDS = ("레버리지", "인버스", "ETN", "채권", "선물", "스팩", "단일종목", "TOP10", "액티브", "합성", "커버드콜")
 
 def fetch_kr(limit=12, min_cap_eok=1000):
     rows = []
@@ -28,7 +29,8 @@ def fetch_kr(limit=12, min_cap_eok=1000):
         d = get_json(f"https://m.stock.naver.com/api/stocks/up/{mkt}?page=1&pageSize=40")
         for s in d.get("stocks") or []:
             name = s.get("stockName") or ""
-            if any(w in name for w in ETP_WORDS):  # ETF·ETN·스팩 제외 — 개별 종목만
+            tok = name.split()[0] if name.split() else ""
+            if tok in ETP_BRANDS or any(w in name for w in ETP_KEYWORDS):  # ETF·ETN·스팩 제외 — 개별 종목만
                 continue
             cap = num(s.get("marketValue"))  # 억원
             if cap < min_cap_eok:
@@ -52,20 +54,20 @@ def fetch_kr(limit=12, min_cap_eok=1000):
         time.sleep(0.12)
     return rows
 
-def fetch_us(limit=12, min_cap_man_usd=100000):  # 10만 만USD = $1B
+def fetch_us(limit=12, min_cap_thousand_usd=1_000_000):  # 100만 천USD = $1B
     rows = []
     for exch in ("NASDAQ", "NYSE"):
         d = get_json(f"https://api.stock.naver.com/stock/exchange/{exch}/up?page=1&pageSize=25")
         for s in d.get("stocks") or []:
-            cap = num(s.get("marketValue"))  # 만 USD
-            if cap < min_cap_man_usd:
+            cap = num(s.get("marketValue"))  # 천 USD (예: GPC "18,244,886" = $18.2B)
+            if cap < min_cap_thousand_usd:
                 continue
             ind = s.get("industryCodeType") or {}
             rows.append({
                 "name": s.get("stockName"), "nameEng": s.get("stockNameEng"),
                 "sym": s.get("symbolCode"), "exch": exch,
                 "price": num(s.get("closePrice")), "pct": num(s.get("fluctuationsRatio")),
-                "capB": round(cap / 100000.0, 1),  # $B
+                "capB": round(cap / 1_000_000.0, 1),  # $B
                 "sector": ind.get("industryGroupKor") or "—",
             })
         time.sleep(0.15)

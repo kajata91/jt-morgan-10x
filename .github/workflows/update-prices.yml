@@ -24,11 +24,13 @@ jobs:
           python-version: "3.12"
       - name: Fetch KRX prices via Naver
         run: python3 scripts/fetch_prices.py
+      - name: Fetch TOP GUNS rankings (KR·US)
+        run: python3 scripts/fetch_topguns.py || echo "topguns skipped"
       - name: Commit & push if changed
         run: |
           git config user.name "tenver-bot"
           git config user.email "actions@github.com"
-          git add prices.js
+          git add prices.js topguns.js
           if git diff --cached --quiet; then
             echo "No price changes."
           else

@@ -190,9 +190,11 @@
     <div class="navtitle">RESEARCH</div>
     <nav class="nav">
       <a href="#top" class="on"><span class="dot"></span>대시보드</a>
-      <a href="#main10">주전 종목</a>
-      <a href="#bench10">추가 추천</a>
-      <a href="#mystocks">내 종목 <span class="newtag">NEW</span></a>
+      <a href="#consult">종목 상담 <span class="newtag">NEW</span></a>
+      <a href="#topguns">TOP GUNS <span class="newtag">NEW</span></a>
+      <a href="#mystocks">MY PORTFOLIO</a>
+      <a href="#wisdom">WISDOM <span class="newtag">NEW</span></a>
+      <a href="#reflection">REFLECTION <span class="newtag">NEW</span></a>
     </nav>
     <div class="navtitle">SYSTEM</div>
     <nav class="nav">
@@ -271,9 +273,10 @@
 
     <div class="row r2">
       <div class="card" id="mystocks">
-        <h2>내 종목 <span class="fn">기능 6 · 10</span></h2>
-        <div class="desc">주식·ETF·ETN(레버리지·인버스 포함)을 검색해 등록하면 현재가·수익률이 최근 마감 시세로 자동 계산됩니다 (이 브라우저에만 저장) · <span id="priceAsOf" class="clickhint"></span></div>
+        <h2>MY PORTFOLIO <span class="fn">기능 6 · 10</span></h2>
+        <div class="desc">주식·ETF·ETN(레버리지·인버스 포함)을 검색해 등록하면 현재가·수익률이 최근 마감 시세로 자동 계산됩니다 (이 브라우저에만 저장) · 종목명을 클릭하면 텐버 보고서(종목 상담)로 연결됩니다 · <span id="priceAsOf" class="clickhint"></span></div>
         <div id="mySummary" style="display:none;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:11px 15px;margin-bottom:12px;font-size:12.5px;gap:18px;flex-wrap:wrap"></div>
+        <div id="portPeriods" style="display:none;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 15px;margin-bottom:12px;font-size:12px;gap:16px;flex-wrap:wrap"></div>
         <div class="myform">
           <div class="searchbox">
             <input id="myName" placeholder="종목명 검색 — 주식·ETF·ETN 모두 가능 (예: KODEX 200)" autocomplete="off">
@@ -303,6 +306,67 @@
         <h2><span id="benchTitle">추가 추천</span> <span class="fn">기능 4</span> <span class="clickhint">— 클릭 시 리포트</span></h2>
         <div class="desc">승격 대기 · 강등 · 투기 버킷 격리 종목 — 주전 결원의 충원 후보군</div>
         <ul class="bench" id="bench10body"></ul>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card" id="consult">
+        <h2>종목 상담 <span class="fn">NEW</span> <span class="clickhint">— 종목을 검색해 텐버 심층 보고서를 열거나 신청하세요</span></h2>
+        <div class="desc">텐버가 강령 v1.2와 실전 기법서 전체(기저율·PIE 역산·해자 관문·회계 방어 25항·GIC 교차심의)를 적용해 작성하는 기관급 심층 리서치입니다. 이미 작성된 보고서는 즉시 열리고, 없는 종목은 상담 대기함에 등록됩니다.</div>
+        <div class="myform" style="grid-template-columns:1fr auto">
+          <div class="searchbox">
+            <input id="csName" placeholder="종목명 검색 — 예: 아이쓰리시스템, 삼성전자" autocomplete="off">
+            <div class="sugg" id="csSugg"></div>
+          </div>
+          <button id="csGo">보고서 열기 / 상담 신청</button>
+        </div>
+        <div style="margin:12px 0 4px;font-size:11px;color:var(--muted);letter-spacing:.5px">보유 보고서 — 클릭하면 열립니다</div>
+        <div id="csAvail" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        <div id="csQueueWrap" style="display:none;margin-top:14px">
+          <div style="font-size:11px;color:var(--amber);letter-spacing:.5px;margin-bottom:6px">상담 대기함 — 텐버가 작성하면 보고서로 승격됩니다</div>
+          <div id="csQueue" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        </div>
+        <div class="mynote">※ 심층 보고서 생성은 텐버의 리서치 세션에서 수행됩니다. Claude Code에서 <b>“종목 상담: ○○○”</b>이라고 지시하시면 — 시간이 걸리더라도 — 기관 리포트를 능가하는 깊이로 작성해 이곳에 등록합니다. 대기함은 이 기기에 저장되며, 다음 상담 지시 때 함께 말씀해 주세요.</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card" id="topguns">
+        <h2>TOP GUNS <span class="fn">NEW</span> <span class="clickhint">— 한·미 상승 랭킹과 페어링 맵</span></h2>
+        <div class="desc" id="tgAsOf">당일 랭킹은 시세 로봇이 자동 갱신(시총 필터: KR 1,000억+ · US $1B+, ETF·스팩 제외) · 기간별 리더보드와 페어링 맵은 텐버가 주간 갱신합니다</div>
+        <div class="myform" style="grid-template-columns:1fr;margin-bottom:12px">
+          <div class="searchbox">
+            <input id="tgSearch" placeholder="종목 검색 — 한국 종목명 또는 미국 티커 (예: SK하이닉스, NVDA)" autocomplete="off">
+            <div class="sugg" id="tgSugg"></div>
+          </div>
+        </div>
+        <div id="tgHit" style="display:none;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:11px 15px;margin-bottom:12px;font-size:12.5px"></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px">
+          <div>
+            <div style="font-size:11px;color:var(--muted);letter-spacing:.5px;margin-bottom:6px">🇰🇷 당일 상승 TOP <span id="tgKrDate"></span></div>
+            <div class="tablewrap"><table style="min-width:300px"><thead><tr><th>종목</th><th>등락</th><th>현재가</th><th>시총</th><th>PER</th><th>PBR</th></tr></thead><tbody id="tgKr"></tbody></table></div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--muted);letter-spacing:.5px;margin-bottom:6px">🇺🇸 당일 상승 TOP <span id="tgUsDate"></span></div>
+            <div class="tablewrap"><table style="min-width:300px"><thead><tr><th>종목</th><th>등락</th><th>현재가</th><th>시총</th><th>섹터</th></tr></thead><tbody id="tgUs"></tbody></table></div>
+          </div>
+        </div>
+        <div id="tgPeriods" style="margin-top:16px"></div>
+        <div id="tgPairs" style="margin-top:16px"></div>
+        <div class="mynote">※ 랭킹은 정보 제공이며 추천이 아닙니다 — 당일 급등주는 강령의 소외 원칙과 대체로 반대편에 있습니다. 페어링 맵은 밸류체인 실체 기준이며 상관관계는 위기 시 불안정해질 수 있습니다(강령 금지 통계 3항).</div>
+      </div>
+    </div>
+
+    <div class="row r2">
+      <div class="card" id="wisdom">
+        <h2>WISDOM <span class="fn">NEW</span> <span class="clickhint">— 주간 글로벌 인사이트</span></h2>
+        <div class="desc">McKinsey·BCG·BlackRock·J.P. Morgan·Morgan Stanley·MIT·Stanford·WEF 등 글로벌 최상위 기관의 최신 리서치와 미국 시장을 움직이는 톱 애널리스트 시각 — 매주 월요일 텐버가 선별·요약합니다</div>
+        <div id="wisdomBody"></div>
+      </div>
+      <div class="card" id="reflection">
+        <h2>REFLECTION <span class="fn">NEW</span> <span class="clickhint">— 텐버의 주간 반성문</span></h2>
+        <div class="desc">매주 주말, 텐버가 자신의 판단·실수·성과를 냉정하게 복기합니다. 같은 실수를 반복하지 않는 것 — 그것이 이 카드의 존재 이유입니다</div>
+        <div id="reflectionBody"></div>
       </div>
     </div>
 
@@ -341,6 +405,7 @@
 
 <script src="data.enc.js"></script>
 <script src="prices.js"></script>
+<script src="topguns.js"></script>
 <script>
   // ================= 잠금 게이트 (AES-256-GCM + PBKDF2) =================
   const GATE_LS = "tenver_gate_pass";
@@ -676,6 +741,7 @@
       body.innerHTML = `<tr><td colspan="10" style="color:var(--muted);font-size:12px">아직 입력된 종목이 없습니다 — 종목명(주식·ETF·ETN)을 검색해 선택하고 매수가·주식수를 입력한 뒤 '추가'를 눌러보세요.</td></tr>`;
       return;
     }
+    renderPortPeriods(list);
     body.innerHTML = list.map((s, i) => {
       const cur = effCur(s);
       const hasCur = cur != null && cur > 0;
@@ -686,7 +752,7 @@
       const badge = s.curManual != null ? `<span class="pbadge pb-manual">수동</span>` : (hasCur ? `<span class="pbadge pb-auto">자동</span>` : "");
       return `<tr>
         <td><input type="checkbox" class="mysel" data-i="${i}"></td>
-        <td class="stock">${s.name}${s.code ? `<br><span class="code">${s.code}</span>` : ""}</td>
+        <td class="stock" style="cursor:pointer" title="클릭하면 텐버 보고서(종목 상담)로 연결" onclick="consultByIdx(${i})">${s.name}${s.code ? `<br><span class="code">${s.code}</span>` : ""}</td>
         <td class="num" style="cursor:pointer;text-decoration:underline dotted" title="클릭해서 매수가 수정" onclick="editBuy(${i})">${won(s.buy)}</td>
         <td class="num" style="cursor:pointer;text-decoration:underline dotted" title="클릭해서 주식수 수정" onclick="editQty(${i})">${(s.qty || 1).toLocaleString()}주</td>
         <td class="num" style="cursor:pointer;text-decoration:underline dotted" title="클릭: 수동 수정 / 빈 값 입력: 자동 복귀" onclick="editCur(${i})">${hasCur ? won(cur) : "입력 필요"}${badge}</td>
@@ -727,6 +793,226 @@
     document.getElementById("myselAll").checked = false;
     renderMy();
   };
+
+  // ================= v3.0 — 종목 상담 · TOP GUNS · WISDOM · REFLECTION · 기간 증감 =================
+
+  // 공용: 임의 문서 모달 (상담 보고서·반성문)
+  function openDoc(title, sub, sections) {
+    document.getElementById("mTitle").textContent = title;
+    document.getElementById("mSub").textContent = sub || "";
+    document.getElementById("mBody").innerHTML = (sections || []).map(sec =>
+      `<div class="sec"><h4>${sec.h}</h4><p>${sec.p}</p></div>`).join("");
+    overlay.classList.add("show");
+  }
+  window.openDoc = openDoc;
+
+  // ---- 종목 상담 (기능: 보고서 열람 + 상담 대기함) ----
+  const CS_LS = "tenver_consult_queue";
+  const loadQ = () => { try { return JSON.parse(localStorage.getItem(CS_LS)) || []; } catch { return []; } };
+  const saveQ = q => localStorage.setItem(CS_LS, JSON.stringify(q));
+  const consults = D.consults || [];
+  function reportIndex() {
+    const arr = [];
+    D.main10.forEach((s, i) => s.report && arr.push({ name: s.name, code: s.code, kind: "main", i, tag: "주전" }));
+    (D.bench10 || []).forEach((s, i) => s.report && arr.push({ name: s.name, code: s.code, kind: "bench", i, tag: "추천" }));
+    consults.forEach((s, i) => arr.push({ name: s.name, code: s.code, kind: "consult", i, tag: "상담" }));
+    return arr;
+  }
+  function openAnyReport(hit) {
+    if (hit.kind === "consult") {
+      const c = consults[hit.i];
+      openDoc(`${c.name}${c.code ? " (" + c.code + ")" : ""}`, `텐버 종목 상담 보고서 · ${c.date}${c.verdict ? " · 판정: " + c.verdict : ""}`, c.report);
+    } else openReport(hit.kind, hit.i);
+  }
+  function renderConsult() {
+    const idx = reportIndex();
+    document.getElementById("csAvail").innerHTML = idx.length ? idx.map((h, n) =>
+      `<span class="badge b-mid" style="cursor:pointer;padding:6px 12px;font-size:11px" data-cs-open="${n}">${h.name} <span style="opacity:.55">${h.tag}</span></span>`).join("")
+      : `<span style="color:var(--muted);font-size:12px">등록된 보고서가 아직 없습니다.</span>`;
+    document.querySelectorAll("[data-cs-open]").forEach(el => el.onclick = () => openAnyReport(idx[Number(el.dataset.csOpen)]));
+    const q = loadQ();
+    document.getElementById("csQueueWrap").style.display = q.length ? "block" : "none";
+    document.getElementById("csQueue").innerHTML = q.map((r, i) =>
+      `<span class="badge" style="background:#241f14;border:1px solid #4a3f22;color:var(--amber);padding:6px 12px;font-size:11px">${r.name} · ${r.date} 신청 <b style="cursor:pointer;margin-left:6px" title="대기함에서 제거" data-cs-del="${i}">✕</b></span>`).join("");
+    document.querySelectorAll("[data-cs-del]").forEach(el => el.onclick = () => { const qq = loadQ(); qq.splice(Number(el.dataset.csDel), 1); saveQ(qq); renderConsult(); });
+  }
+  function requestConsult(name, code) {
+    if (!name) return;
+    const hit = reportIndex().find(h => (code && h.code === code) || h.name === name);
+    if (hit) { openAnyReport(hit); return; }
+    const q = loadQ();
+    if (!q.find(r => r.name === name)) { q.push({ name, code: code || null, date: new Date().toISOString().slice(0, 10) }); saveQ(q); }
+    renderConsult();
+    document.getElementById("consult").scrollIntoView({ behavior: "smooth" });
+    alert(`'${name}' 상담이 대기함에 등록되었습니다.\n\nClaude Code에서 텐버에게 "종목 상담: ${name}"이라고 지시하시면, 강령·기법서 전체를 적용한 기관급 심층 보고서를 작성해 이 화면에 등록합니다.`);
+  }
+  window.consultByIdx = i => { const s = loadMy()[i]; if (s) requestConsult(s.name, s.code); };
+  // 상담 검색 자동완성
+  (() => {
+    const inp = document.getElementById("csName"), sg = document.getElementById("csSugg");
+    let csCode = null;
+    inp.addEventListener("input", () => {
+      csCode = null;
+      const qv = inp.value.trim();
+      if (!P || qv.length < 1) { sg.classList.remove("show"); return; }
+      let hits = [];
+      for (const [code, it] of Object.entries(P.items)) {
+        if (it.n.includes(qv) || code.startsWith(qv)) hits.push([code, it]);
+        if (hits.length >= 40) break;
+      }
+      hits.sort((a, b) => {
+        const ra = a[1].n === qv ? 0 : a[1].n.startsWith(qv) ? 1 : 2;
+        const rb = b[1].n === qv ? 0 : b[1].n.startsWith(qv) ? 1 : 2;
+        return ra - rb || a[1].n.length - b[1].n.length;
+      });
+      hits = hits.slice(0, 8);
+      if (!hits.length) { sg.classList.remove("show"); return; }
+      const rIdx = reportIndex();
+      sg.innerHTML = hits.map(([code, it]) => {
+        const has = rIdx.find(h => h.code === code);
+        return `<div data-code="${code}" data-name="${it.n}"><span>${it.n} ${has ? '<span style="color:var(--green);font-size:10px">📄 보고서 있음</span>' : ""}</span><span class="scode">${code} · ${won(it.p)}</span></div>`;
+      }).join("");
+      sg.classList.add("show");
+      sg.querySelectorAll("div").forEach(el => el.onclick = () => {
+        inp.value = el.dataset.name; csCode = el.dataset.code; sg.classList.remove("show");
+        requestConsult(el.dataset.name, el.dataset.code);
+      });
+    });
+    document.getElementById("csGo").onclick = () => requestConsult(inp.value.trim(), csCode);
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") { sg.classList.remove("show"); requestConsult(inp.value.trim(), csCode); } });
+  })();
+
+  // ---- TOP GUNS ----
+  const fmtEok = v => v >= 10000 ? (v / 10000).toFixed(1) + "조" : Math.round(v).toLocaleString() + "억";
+  function renderTopguns() {
+    const TG = (typeof TENVER_TOPGUNS !== "undefined") ? TENVER_TOPGUNS : null;
+    if (TG) {
+      document.getElementById("tgKrDate").textContent = `· ${TG.asOf}`;
+      document.getElementById("tgUsDate").textContent = `· ${TG.asOf}`;
+      document.getElementById("tgKr").innerHTML = (TG.kr || []).map(r =>
+        `<tr><td class="stock" style="font-size:12px">${r.name}<br><span class="code">${r.code} · ${r.mkt}</span></td><td class="num up">+${r.pct.toFixed(1)}%</td><td class="num">${won(r.price)}</td><td class="num">${fmtEok(r.cap)}</td><td class="num" style="font-size:11px">${r.per}</td><td class="num" style="font-size:11px">${r.pbr}</td></tr>`).join("");
+      document.getElementById("tgUs").innerHTML = (TG.us || []).map(r =>
+        `<tr><td class="stock" style="font-size:12px">${r.name}<br><span class="code">${r.sym} · ${r.exch}</span></td><td class="num up">+${r.pct.toFixed(1)}%</td><td class="num">$${r.price.toLocaleString()}</td><td class="num">$${r.capB}B</td><td class="num" style="font-size:11px">${r.sector}</td></tr>`).join("");
+    }
+    const TM = D.topguns;
+    if (TM && TM.periods) {
+      const secTbl = (title, rows, isUS) => rows && rows.length ? `
+        <div style="margin-bottom:12px"><div style="font-size:11px;color:var(--muted);letter-spacing:.5px;margin-bottom:5px">${title}</div>
+        <div class="tablewrap"><table style="min-width:480px"><thead><tr><th>종목</th><th>수익률</th><th>섹터</th><th>상승 동력</th><th>전문가 톤</th></tr></thead><tbody>${rows.map(r =>
+          `<tr><td class="stock" style="font-size:12px">${r.name}<br><span class="code">${isUS ? (r.ticker || "") : (r.code || "")}${r.cap ? " · " + r.cap : ""}</span></td><td class="num up">${r.ret}</td><td style="font-size:11px;color:var(--muted)">${r.sector || ""}</td><td style="font-size:11.5px">${r.why || ""}</td><td style="font-size:11px;color:var(--muted)">${r.opinion || "—"}</td></tr>`).join("")}</tbody></table></div></div>` : "";
+      const P2 = TM.periods;
+      document.getElementById("tgPeriods").innerHTML =
+        `<div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--text)">기간별 리더보드 <span style="font-size:10px;color:var(--muted)">· ${TM.updated} 텐버 갱신 · 보도 기반(출처는 원장 기록)</span></div>` +
+        secTbl("🇰🇷 6월 상승 리더", P2.kr && P2.kr.june) + secTbl("🇰🇷 2분기(4~6월)", P2.kr && P2.kr.q2) + secTbl("🇰🇷 2026 상반기(YTD)", P2.kr && P2.kr.ytd) +
+        secTbl("🇺🇸 6월 상승 리더", P2.us && P2.us.june, 1) + secTbl("🇺🇸 2분기(4~6월)", P2.us && P2.us.q2, 1) + secTbl("🇺🇸 2026 상반기(YTD)", P2.us && P2.us.ytd, 1);
+    }
+    if (TM && TM.pairs) {
+      document.getElementById("tgPairs").innerHTML =
+        `<div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--text)">🔗 한·미 페어링 맵 <span style="font-size:10px;color:var(--muted)">— 미국 종목과 밸류체인·테마로 연동되는 한국 종목 (텐버 검증)</span></div>
+        <div class="tablewrap"><table style="min-width:560px"><thead><tr><th>미국</th><th>한국 페어</th><th>연동 논리</th><th>유형</th><th>강도</th></tr></thead><tbody>${TM.pairs.map(p =>
+          `<tr><td class="stock" style="font-size:12px">${p.us}<br><span class="code">${p.usTicker}</span></td><td class="stock" style="font-size:12px">${p.kr}<br><span class="code">${p.krCode || ""}</span></td><td style="font-size:11.5px">${p.logic}</td><td style="font-size:11px;color:var(--muted)">${p.type}</td><td><span class="badge ${p.strength === "강" ? "b-high" : "b-mid"}">${p.strength}</span></td></tr>`).join("")}</tbody></table></div>`;
+    }
+  }
+  // TOP GUNS 검색 — 한국 종목명·미국 티커 → 시세·페어·랭킹 종합
+  (() => {
+    const inp = document.getElementById("tgSearch"), sg = document.getElementById("tgSugg"), hitBox = document.getElementById("tgHit");
+    function showHit(name, code) {
+      const TM = D.topguns || {}, TG = (typeof TENVER_TOPGUNS !== "undefined") ? TENVER_TOPGUNS : null;
+      let html = "";
+      if (code && P && P.items[code]) html += `<b>${name}</b> <span class="code">${code}</span> · 최근가 <b>${won(P.items[code].p)}</b>`;
+      else html += `<b>${name}</b>`;
+      const pairs = (TM.pairs || []).filter(p => p.kr === name || p.krCode === code || p.usTicker === name.toUpperCase() || p.us.toUpperCase().includes(name.toUpperCase()));
+      if (pairs.length) html += pairs.map(p => `<br>🔗 페어링: <b>${p.us}(${p.usTicker}) ↔ ${p.kr}</b> — ${p.logic} <span class="badge ${p.strength === "강" ? "b-high" : "b-mid"}" style="font-size:9px">${p.strength}</span>`).join("");
+      if (TG) {
+        const inKr = (TG.kr || []).find(r => r.code === code || r.name === name);
+        const inUs = (TG.us || []).find(r => r.sym === name.toUpperCase());
+        if (inKr) html += `<br>🔥 오늘 한국 상승 TOP 진입: +${inKr.pct.toFixed(1)}%`;
+        if (inUs) html += `<br>🔥 오늘 미국 상승 TOP 진입: +${inUs.pct.toFixed(1)}% ($${inUs.price})`;
+      }
+      const rHit = reportIndex().find(h => h.code === code || h.name === name);
+      html += rHit ? `<br>📄 <b style="color:var(--green)">텐버 보고서 보유</b> — 종목 상담 카드에서 이름을 클릭하면 열립니다` : `<br><span style="color:var(--muted);font-size:11px">텐버 보고서 없음 — 종목 상담에서 신청할 수 있습니다</span>`;
+      hitBox.innerHTML = html;
+      hitBox.style.display = "block";
+    }
+    inp.addEventListener("input", () => {
+      const qv = inp.value.trim();
+      if (!qv) { sg.classList.remove("show"); hitBox.style.display = "none"; return; }
+      let hits = [];
+      if (P) for (const [code, it] of Object.entries(P.items)) {
+        if (it.n.includes(qv) || code.startsWith(qv)) hits.push({ t: "kr", code, name: it.n, sub: `${code} · ${won(it.p)}` });
+        if (hits.length >= 30) break;
+      }
+      ((D.topguns || {}).pairs || []).forEach(p => {
+        if (p.usTicker.startsWith(qv.toUpperCase()) || p.us.toUpperCase().includes(qv.toUpperCase())) hits.push({ t: "us", code: null, name: p.usTicker, sub: `${p.us} ↔ ${p.kr}` });
+      });
+      hits.sort((a, b) => (a.name === qv ? 0 : a.name.startsWith(qv) ? 1 : 2) - (b.name === qv ? 0 : b.name.startsWith(qv) ? 1 : 2) || a.name.length - b.name.length);
+      hits = hits.slice(0, 8);
+      if (!hits.length) { sg.classList.remove("show"); return; }
+      sg.innerHTML = hits.map((h, i) => `<div data-i="${i}"><span>${h.name}</span><span class="scode">${h.sub}</span></div>`).join("");
+      sg.classList.add("show");
+      sg.querySelectorAll("div").forEach(el => el.onclick = () => {
+        const h = hits[Number(el.dataset.i)];
+        inp.value = h.name; sg.classList.remove("show"); showHit(h.name, h.code);
+      });
+    });
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") { sg.classList.remove("show"); showHit(inp.value.trim(), null); } });
+  })();
+
+  // ---- WISDOM ----
+  function renderWisdom() {
+    const w = D.wisdom || [];
+    document.getElementById("wisdomBody").innerHTML = w.length ? w.map(wk =>
+      `<div style="margin:2px 0 10px;font-size:11px;color:var(--amber);letter-spacing:.5px">${wk.week} · ${wk.updated} 텐버 선별</div>` +
+      wk.items.map(it =>
+        `<div class="sec" style="margin-bottom:12px"><h4 style="margin:0 0 3px;font-size:13px"><a href="${it.url}" target="_blank" style="color:var(--text);text-decoration:none">${it.title} ↗</a></h4>
+        <div style="font-size:10.5px;color:var(--muted);margin-bottom:4px">${it.source}${it.author ? " · " + it.author : ""} · ${it.date} · <span class="badge b-mid" style="font-size:9px;padding:1px 7px">${it.tag}</span></div>
+        <p style="font-size:12px;margin:0 0 4px;line-height:1.65">${it.summary}</p>
+        <p style="font-size:11.5px;color:var(--green);margin:0">▸ 텐버 시각: ${it.insight}</p></div>`).join("")
+    ).join(`<hr style="border:none;border-top:1px solid var(--line);margin:14px 0">`) :
+    `<span style="color:var(--muted);font-size:12px">창간호 준비 중 — 매주 월요일 자동 점검 때 갱신됩니다.</span>`;
+  }
+
+  // ---- REFLECTION ----
+  function renderReflection() {
+    const rs = D.reflections || [];
+    document.getElementById("reflectionBody").innerHTML = rs.length ? rs.map((r, i) =>
+      `<div class="sec" style="margin-bottom:12px;cursor:pointer" data-rf="${i}">
+        <h4 style="margin:0 0 3px;font-size:13px">${r.title} <span style="font-size:10px;color:var(--muted)">— 전문 보기</span></h4>
+        <div style="font-size:10.5px;color:var(--muted);margin-bottom:4px">${r.date}${r.grade ? ` · 자체 평점 <b style="color:var(--amber)">${r.grade}</b>` : ""}</div>
+        <p style="font-size:12px;margin:0;line-height:1.65">${r.summary}</p></div>`).join("") :
+    `<span style="color:var(--muted);font-size:12px">첫 반성문 준비 중 — 매주 주말 등록됩니다.</span>`;
+    document.querySelectorAll("[data-rf]").forEach(el => el.onclick = () => {
+      const r = rs[Number(el.dataset.rf)];
+      openDoc(r.title, `텐버 주간 반성문 · ${r.date}${r.grade ? " · 자체 평점 " + r.grade : ""}`, r.sections);
+    });
+  }
+
+  // ---- MY PORTFOLIO 기간 증감 (접속일 스냅샷 축적) ----
+  const PH_KEY = "tenver_port_history_v1";
+  function renderPortPeriods(list) {
+    const box = document.getElementById("portPeriods");
+    if (!P || !list.length) { box.style.display = "none"; return; }
+    let h = {}; try { h = JSON.parse(localStorage.getItem(PH_KEY)) || {}; } catch {}
+    const today = new Date().toISOString().slice(0, 10);
+    let tot = 0;
+    list.forEach(s => { const c = effCur(s); if (c > 0) tot += c * (s.qty || 1); });
+    if (tot > 0) { h[today] = { t: Math.round(tot) }; localStorage.setItem(PH_KEY, JSON.stringify(h)); }
+    const dates = Object.keys(h).sort();
+    if (!dates.length) { box.style.display = "none"; return; }
+    const cur = h[dates[dates.length - 1]].t;
+    const chips = [["일간", 1], ["주간", 7], ["월간", 30], ["분기", 91], ["연간", 365]].map(([lab, days]) => {
+      const target = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+      const past = dates.filter(d => d <= target).pop();
+      if (!past || !h[past].t) return `<span><span style="color:var(--muted)">${lab}</span> <b style="color:var(--muted);font-weight:500">축적 중</b></span>`;
+      const chg = (cur / h[past].t - 1) * 100;
+      return `<span><span style="color:var(--muted)">${lab}</span> <b class="${chg >= 0 ? "up" : "down"}">${(chg >= 0 ? "+" : "") + chg.toFixed(1)}%</b> <span style="color:var(--muted);font-size:10px">(${past.slice(5).replace("-", ".")}~)</span></span>`;
+    });
+    box.style.display = "flex";
+    box.innerHTML = `<span style="font-weight:700">기간 증감</span>` + chips.join("") +
+      `<span style="color:var(--muted);font-size:10px">접속일 평가액 스냅샷 기준 · 기록 ${dates.length}일 — 매일 접속할수록 정밀해집니다</span>`;
+  }
+
+  renderConsult(); renderTopguns(); renderWisdom(); renderReflection();
 
   // ---- 선택 편집 · 순서 이동 ----
   let editIdx = null;

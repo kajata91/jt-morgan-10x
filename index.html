@@ -189,16 +189,16 @@
     </div>
     <div class="navtitle">RESEARCH</div>
     <nav class="nav">
-      <a href="#top" class="on"><span class="dot"></span>대시보드</a>
-      <a href="#consult">종목 상담 <span class="newtag">NEW</span></a>
-      <a href="#topguns">TOP GUNS <span class="newtag">NEW</span></a>
-      <a href="#mystocks">MY PORTFOLIO</a>
-      <a href="#wisdom">WISDOM <span class="newtag">NEW</span></a>
-      <a href="#reflection">REFLECTION <span class="newtag">NEW</span></a>
+      <a href="#/" data-pg="dash" class="on"><span class="dot"></span>대시보드</a>
+      <a href="#/consult" data-pg="consult">종목 상담 <span class="newtag">NEW</span></a>
+      <a href="#/topguns" data-pg="topguns">TOP GUNS <span class="newtag">NEW</span></a>
+      <a href="#/portfolio" data-pg="portfolio">MY PORTFOLIO</a>
+      <a href="#/wisdom" data-pg="wisdom">WISDOM <span class="newtag">NEW</span></a>
+      <a href="#/reflection" data-pg="reflection">REFLECTION <span class="newtag">NEW</span></a>
     </nav>
     <div class="navtitle">SYSTEM</div>
     <nav class="nav">
-      <a href="#temp">시장 온도계</a>
+      <a href="#/">시장 온도계</a>
       <a href="https://github.com/kajata91/jt-morgan-10x" target="_blank">GitHub 저장소</a>
       <a href="#" onclick="gateLock();return false">🔒 잠그기</a>
       <a href="#" id="uiEditBtn">✏️ 화면 편집</a>
@@ -217,6 +217,7 @@
     <div class="strip" id="strip"></div>
     <div class="alert" id="alert"></div>
 
+    <section class="page" id="pg-dash">
     <div class="row r3">
       <div class="card" id="temp">
         <h2>시장 온도계 <span class="fn">강령 모듈 0</span></h2>
@@ -272,6 +273,69 @@
     </div>
 
     <div class="row r2">
+<div class="card" id="bench10">
+        <h2><span id="benchTitle">추가 추천</span> <span class="fn">기능 4</span> <span class="clickhint">— 클릭 시 리포트</span></h2>
+        <div class="desc">승격 대기 · 강등 · 투기 버킷 격리 종목 — 주전 결원의 충원 후보군</div>
+        <ul class="bench" id="bench10body"></ul>
+      </div>
+    </div>
+    </section>
+
+    <section class="page" id="pg-consult">
+    <div class="row">
+      <div class="card" id="consult">
+        <h2>종목 상담 <span class="fn">NEW</span> <span class="clickhint">— 종목을 검색해 텐버 심층 보고서를 열거나 신청하세요</span></h2>
+        <div class="desc">텐버가 강령 v1.2와 실전 기법서 전체(기저율·PIE 역산·해자 관문·회계 방어 25항·GIC 교차심의)를 적용해 작성하는 기관급 심층 리서치입니다. 이미 작성된 보고서는 즉시 열리고, 없는 종목은 상담 대기함에 등록됩니다.</div>
+        <div class="myform" style="grid-template-columns:1fr auto">
+          <div class="searchbox">
+            <input id="csName" placeholder="종목명 검색 — 예: 아이쓰리시스템, 삼성전자" autocomplete="off">
+            <div class="sugg" id="csSugg"></div>
+          </div>
+          <button id="csGo">보고서 열기 / 상담 신청</button>
+        </div>
+        <div style="margin:12px 0 4px;font-size:11px;color:var(--muted);letter-spacing:.5px">보유 보고서 — 클릭하면 열립니다</div>
+        <div id="csAvail" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        <div id="csQueueWrap" style="display:none;margin-top:14px">
+          <div style="font-size:11px;color:var(--amber);letter-spacing:.5px;margin-bottom:6px">상담 대기함 — 텐버가 작성하면 보고서로 승격됩니다</div>
+          <div id="csQueue" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        </div>
+        <div class="mynote">※ 심층 보고서 생성은 텐버의 리서치 세션에서 수행됩니다. Claude Code에서 <b>“종목 상담: ○○○”</b>이라고 지시하시면 — 시간이 걸리더라도 — 기관 리포트를 능가하는 깊이로 작성해 이곳에 등록합니다. 대기함은 이 기기에 저장되며, 다음 상담 지시 때 함께 말씀해 주세요.</div>
+      </div>
+    </div>
+    </section>
+
+    <section class="page" id="pg-topguns">
+    <div class="row">
+      <div class="card" id="topguns">
+        <h2>TOP GUNS <span class="fn">NEW</span> <span class="clickhint">— 한·미 상승 랭킹과 페어링 맵</span></h2>
+        <div class="desc" id="tgAsOf">당일 랭킹은 시세 로봇이 자동 갱신(시총 필터: KR 1,000억+ · US $1B+, ETF·스팩 제외) · 기간별 리더보드와 페어링 맵은 텐버가 주간 갱신합니다</div>
+        <div class="myform" style="grid-template-columns:1fr;margin-bottom:12px">
+          <div class="searchbox">
+            <input id="tgSearch" placeholder="종목 검색 — 한국 종목명 또는 미국 티커 (예: SK하이닉스, NVDA)" autocomplete="off">
+            <div class="sugg" id="tgSugg"></div>
+          </div>
+        </div>
+        <div id="tgHit" style="display:none;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:11px 15px;margin-bottom:12px;font-size:12.5px"></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px">
+          <div>
+            <div style="font-size:11px;color:var(--muted);letter-spacing:.5px;margin-bottom:6px">🇰🇷 당일 상승 TOP <span id="tgKrDate"></span></div>
+            <div class="tablewrap"><table style="min-width:300px"><thead><tr><th>종목</th><th>등락</th><th>현재가</th><th>시총</th><th>PER</th><th>PBR</th></tr></thead><tbody id="tgKr"></tbody></table></div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--muted);letter-spacing:.5px;margin-bottom:6px">🇺🇸 당일 상승 TOP <span id="tgUsDate"></span></div>
+            <div class="tablewrap"><table style="min-width:300px"><thead><tr><th>종목</th><th>등락</th><th>현재가</th><th>시총</th><th>섹터</th></tr></thead><tbody id="tgUs"></tbody></table></div>
+          </div>
+        </div>
+        <div id="tgPeriods" style="margin-top:16px"></div>
+        <div id="tgPairs" style="margin-top:16px"></div>
+        <div class="mynote">※ 랭킹은 정보 제공이며 추천이 아닙니다 — 당일 급등주는 강령의 소외 원칙과 대체로 반대편에 있습니다. 페어링 맵은 밸류체인 실체 기준이며 상관관계는 위기 시 불안정해질 수 있습니다(강령 금지 통계 3항).</div>
+      </div>
+    </div>
+
+    </section>
+
+    <section class="page" id="pg-portfolio">
+    <div class="row">
       <div class="card" id="mystocks">
         <h2>MY PORTFOLIO <span class="fn">기능 6 · 10</span></h2>
         <div class="desc">주식·ETF·ETN(레버리지·인버스 포함)을 검색해 등록하면 현재가·수익률이 최근 마감 시세로 자동 계산됩니다 (이 브라우저에만 저장) · 종목명을 클릭하면 텐버 보고서(종목 상담)로 연결됩니다 · <span id="priceAsOf" class="clickhint"></span></div>
@@ -302,73 +366,28 @@
         </div>
         <div class="mynote">※ 현재가는 영업일 정규장 중 약 2시간 간격(09:10·11:10·13:10·15:10) + 마감 후 16:50(종가 확정)에 자동 갱신됩니다(전 종목 시세 파일 prices.js·네이버 출처 — 몇 분 지연될 수 있음). 새로고침하면 최신 시세가 반영됩니다. 현재가 숫자를 클릭하면 수동으로 덮어쓸 수 있고(수동 뱃지), 빈 값으로 입력하면 자동으로 되돌아갑니다. 데이터는 이 기기의 브라우저에만 저장되며 텐버의 추천과 무관한 개인 기록입니다.</div>
       </div>
-      <div class="card" id="bench10">
-        <h2><span id="benchTitle">추가 추천</span> <span class="fn">기능 4</span> <span class="clickhint">— 클릭 시 리포트</span></h2>
-        <div class="desc">승격 대기 · 강등 · 투기 버킷 격리 종목 — 주전 결원의 충원 후보군</div>
-        <ul class="bench" id="bench10body"></ul>
-      </div>
     </div>
+    </section>
 
+    <section class="page" id="pg-wisdom">
     <div class="row">
-      <div class="card" id="consult">
-        <h2>종목 상담 <span class="fn">NEW</span> <span class="clickhint">— 종목을 검색해 텐버 심층 보고서를 열거나 신청하세요</span></h2>
-        <div class="desc">텐버가 강령 v1.2와 실전 기법서 전체(기저율·PIE 역산·해자 관문·회계 방어 25항·GIC 교차심의)를 적용해 작성하는 기관급 심층 리서치입니다. 이미 작성된 보고서는 즉시 열리고, 없는 종목은 상담 대기함에 등록됩니다.</div>
-        <div class="myform" style="grid-template-columns:1fr auto">
-          <div class="searchbox">
-            <input id="csName" placeholder="종목명 검색 — 예: 아이쓰리시스템, 삼성전자" autocomplete="off">
-            <div class="sugg" id="csSugg"></div>
-          </div>
-          <button id="csGo">보고서 열기 / 상담 신청</button>
-        </div>
-        <div style="margin:12px 0 4px;font-size:11px;color:var(--muted);letter-spacing:.5px">보유 보고서 — 클릭하면 열립니다</div>
-        <div id="csAvail" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-        <div id="csQueueWrap" style="display:none;margin-top:14px">
-          <div style="font-size:11px;color:var(--amber);letter-spacing:.5px;margin-bottom:6px">상담 대기함 — 텐버가 작성하면 보고서로 승격됩니다</div>
-          <div id="csQueue" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-        </div>
-        <div class="mynote">※ 심층 보고서 생성은 텐버의 리서치 세션에서 수행됩니다. Claude Code에서 <b>“종목 상담: ○○○”</b>이라고 지시하시면 — 시간이 걸리더라도 — 기관 리포트를 능가하는 깊이로 작성해 이곳에 등록합니다. 대기함은 이 기기에 저장되며, 다음 상담 지시 때 함께 말씀해 주세요.</div>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="card" id="topguns">
-        <h2>TOP GUNS <span class="fn">NEW</span> <span class="clickhint">— 한·미 상승 랭킹과 페어링 맵</span></h2>
-        <div class="desc" id="tgAsOf">당일 랭킹은 시세 로봇이 자동 갱신(시총 필터: KR 1,000억+ · US $1B+, ETF·스팩 제외) · 기간별 리더보드와 페어링 맵은 텐버가 주간 갱신합니다</div>
-        <div class="myform" style="grid-template-columns:1fr;margin-bottom:12px">
-          <div class="searchbox">
-            <input id="tgSearch" placeholder="종목 검색 — 한국 종목명 또는 미국 티커 (예: SK하이닉스, NVDA)" autocomplete="off">
-            <div class="sugg" id="tgSugg"></div>
-          </div>
-        </div>
-        <div id="tgHit" style="display:none;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:11px 15px;margin-bottom:12px;font-size:12.5px"></div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px">
-          <div>
-            <div style="font-size:11px;color:var(--muted);letter-spacing:.5px;margin-bottom:6px">🇰🇷 당일 상승 TOP <span id="tgKrDate"></span></div>
-            <div class="tablewrap"><table style="min-width:300px"><thead><tr><th>종목</th><th>등락</th><th>현재가</th><th>시총</th><th>PER</th><th>PBR</th></tr></thead><tbody id="tgKr"></tbody></table></div>
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--muted);letter-spacing:.5px;margin-bottom:6px">🇺🇸 당일 상승 TOP <span id="tgUsDate"></span></div>
-            <div class="tablewrap"><table style="min-width:300px"><thead><tr><th>종목</th><th>등락</th><th>현재가</th><th>시총</th><th>섹터</th></tr></thead><tbody id="tgUs"></tbody></table></div>
-          </div>
-        </div>
-        <div id="tgPeriods" style="margin-top:16px"></div>
-        <div id="tgPairs" style="margin-top:16px"></div>
-        <div class="mynote">※ 랭킹은 정보 제공이며 추천이 아닙니다 — 당일 급등주는 강령의 소외 원칙과 대체로 반대편에 있습니다. 페어링 맵은 밸류체인 실체 기준이며 상관관계는 위기 시 불안정해질 수 있습니다(강령 금지 통계 3항).</div>
-      </div>
-    </div>
-
-    <div class="row r2">
       <div class="card" id="wisdom">
         <h2>WISDOM <span class="fn">NEW</span> <span class="clickhint">— 주간 글로벌 인사이트</span></h2>
         <div class="desc">McKinsey·BCG·BlackRock·J.P. Morgan·Morgan Stanley·MIT·Stanford·WEF 등 글로벌 최상위 기관의 최신 리서치와 미국 시장을 움직이는 톱 애널리스트 시각 — 매주 월요일 텐버가 선별·요약합니다</div>
         <div id="wisdomBody"></div>
       </div>
+    </div>
+    </section>
+
+    <section class="page" id="pg-reflection">
+    <div class="row">
       <div class="card" id="reflection">
         <h2>REFLECTION <span class="fn">NEW</span> <span class="clickhint">— 텐버의 주간 반성문</span></h2>
         <div class="desc">매주 주말, 텐버가 자신의 판단·실수·성과를 냉정하게 복기합니다. 같은 실수를 반복하지 않는 것 — 그것이 이 카드의 존재 이유입니다</div>
         <div id="reflectionBody"></div>
       </div>
     </div>
+    </section>
 
     <footer id="disclaimer"></footer>
   </main>
@@ -399,6 +418,17 @@
     <label><input type="checkbox" id="gateRemember"> 이 기기에서 기억하기</label>
     <button id="gateBtn">열기</button>
     <div class="gateerr" id="gateErr"></div>
+    <a href="#" id="gateForgot" style="display:block;margin-top:12px;font-size:12px;color:var(--muted);text-decoration:underline dotted">비밀번호를 잊으셨나요? (재설정 안내)</a>
+    <div id="gateHelp" style="display:none;text-align:left;margin-top:12px;padding:13px 15px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;font-size:11.5px;line-height:1.8;color:var(--muted)">
+      <div id="gateHint" style="display:none;margin-bottom:8px;color:var(--amber)"></div>
+      <b style="color:var(--text)">이 대시보드에는 ID가 없습니다</b> — 소유자 1인의 단일 비밀번호 체계입니다.<br>
+      <b style="color:var(--text)">비밀번호 '찾기'는 구조적으로 불가능합니다</b> — 서버가 없는 제로 지식 암호화(AES-256)라서, 비밀번호를 알아낼 수 있는 사람이 아무도 없어야(텐버 포함) 데이터가 안전하기 때문입니다.<br><br>
+      <b style="color:var(--green)">✅ 재설정 방법 (데이터는 그대로 보존됩니다)</b><br>
+      관리 기기(텐버가 설치된 Mac)의 Claude Code에서 텐버에게 이렇게 지시하세요:<br>
+      <span style="color:var(--text);background:rgba(0,0,0,.3);padding:2px 8px;border-radius:6px;display:inline-block;margin:4px 0">"대시보드 비밀번호 재설정: 새비밀번호"</span><br>
+      1~2분 내 재암호화·배포되어 모든 기기에서 새 비밀번호로 열립니다.<br><br>
+      💡 힌트를 등록해 두면 이 화면에 표시됩니다 — 텐버에게 "비밀번호 힌트 등록: (힌트 문구)"라고 지시하세요.
+    </div>
     <div class="gatefoot">모든 리서치 데이터는 AES-256-GCM으로 암호화되어 있으며, 비밀번호 없이는 누구도 열람할 수 없습니다. '내 종목' 입력값은 이 기기의 브라우저에만 저장됩니다.</div>
   </div>
 </div>
@@ -435,6 +465,17 @@
   window.gateLock = () => { localStorage.removeItem(GATE_LS); location.reload(); };
   window.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("gateBtn").onclick = gateSubmit;
+    document.getElementById("gateForgot").onclick = e => {
+      e.preventDefault();
+      const h = document.getElementById("gateHelp");
+      h.style.display = h.style.display === "none" ? "block" : "none";
+      const hint = (typeof TENVER_DATA_ENC !== "undefined") && TENVER_DATA_ENC.hint;
+      if (hint) {
+        const el = document.getElementById("gateHint");
+        el.style.display = "block";
+        el.textContent = "🔑 등록된 힌트: " + hint;
+      }
+    };
     document.getElementById("gatePass").addEventListener("keydown", e => { if (e.key === "Enter") gateSubmit(); });
     const saved = localStorage.getItem(GATE_LS);
     if (saved) {
@@ -852,7 +893,7 @@
     const q = loadQ();
     if (!q.find(r => r.name === name)) { q.push({ name, code: code || null, date: localISO(Date.now()) }); saveQ(q); }
     renderConsult();
-    document.getElementById("consult").scrollIntoView({ behavior: "smooth" });
+    location.hash = "#/consult";
     alert(`'${name}' 상담이 대기함에 등록되었습니다.\n\nClaude Code에서 텐버에게 "종목 상담: ${name}"이라고 지시하시면, 강령·기법서 전체를 적용한 기관급 심층 보고서를 작성해 이 화면에 등록합니다.`);
   }
   window.consultByIdx = i => { const s = loadMy()[i]; if (s) requestConsult(s.name, s.code); };
@@ -1020,6 +1061,18 @@
   }
 
   renderConsult(); renderTopguns(); renderWisdom(); renderReflection();
+
+  // ---- 페이지 라우터 (해시 기반 — 메뉴 클릭 시 독립 화면 전환, 뒤로가기 지원) ----
+  const PAGES = ["dash", "consult", "topguns", "portfolio", "wisdom", "reflection"];
+  function route() {
+    const h = (location.hash || "").replace(/^#\/?/, "") || "dash";
+    const pg = PAGES.includes(h) ? h : "dash";
+    document.querySelectorAll(".page").forEach(el => { el.style.display = (el.id === "pg-" + pg) ? "" : "none"; });
+    document.querySelectorAll('.nav a[data-pg]').forEach(a => a.classList.toggle("on", a.dataset.pg === pg));
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener("hashchange", route);
+  route();
 
   // ---- 선택 편집 · 순서 이동 ----
   let editIdx = null;

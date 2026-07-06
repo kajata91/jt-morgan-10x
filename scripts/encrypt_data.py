@@ -32,6 +32,11 @@ def main():
         "iv": base64.b64encode(iv).decode(),
         "ct": base64.b64encode(ct).decode(),
     }
+    hint_path = os.path.join(APP, ".tenver_hint")  # 선택: 비밀번호 힌트(평문 노출 — 비밀번호를 유추시키지 않는 문구만)
+    if os.path.exists(hint_path):
+        hint = open(hint_path, encoding="utf-8").read().strip()
+        if hint:
+            payload["hint"] = hint
     out = os.path.join(APP, "data.enc.js")
     with open(out, "w", encoding="utf-8") as f:
         f.write("// 자동 생성 — scripts/encrypt_data.py (원본 data.js는 로컬 전용)\n")

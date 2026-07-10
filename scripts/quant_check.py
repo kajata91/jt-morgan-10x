@@ -1,13 +1,36 @@
 #!/usr/bin/env python3
-# JT Morgan 10X — 정량 검사 도구 (유동성·시세 이력)
+# JT Morgan 10X — 정량 검사 도구 (유동성·시세 이력·수급)
 # 강령 모듈 3 보강: GIC 블랙록 렌즈의 $50M 유동성 테스트를 정밀 수치로 자동화.
 # 데이터: FinanceDataReader(네이버 기반, 1순위) — 실패 시 해당 종목 "불확실" 표기.
-import sys, datetime
+#         수급은 네이버 trend API(외국인·기관 순매수, 외국인 보유비율) — 2026-07 확보 라인.
+import json, ssl, sys, datetime, urllib.request
 import FinanceDataReader as fdr
 
 USD_KRW = 1552  # 환율 (수동 갱신)
 TEST_USD = 50_000_000  # $50M 기관 포지션 테스트
 PART = 0.20  # 시장 참여율 상한 20%
+
+def _num(s):
+    """'+7,326' / '-89' / '4.88%' → float"""
+    try:
+        return float(str(s).replace(",", "").replace("+", "").replace("%", ""))
+    except (ValueError, TypeError):
+        return 0.0
+
+def flow(code, days=20):
+    """네이버 trend API — 최근 N영업일 외국인·기관 순매수 금액(억원)과 외국인 보유비율.
+    응답은 bizdate 내림차순, 일별 closePrice 동봉 → 주수×종가 합산으로 금액 환산."""
+    url = f"https://m.stock.naver.com/api/stock/{code}/trend?pageSize={days}&page=1"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (TenverBot)"})
+    with urllib.request.urlopen(req, context=ssl.create_default_context(), timeout=15) as r:
+        rows = json.load(r)
+    if not isinstance(rows, list) or not rows:
+        return None
+    rows = sorted(rows, key=lambda x: x.get("bizdate", ""), reverse=True)[:days]
+    f_amt = sum(_num(x.get("foreignerPureBuyQuant")) * _num(x.get("closePrice")) for x in rows)
+    o_amt = sum(_num(x.get("organPureBuyQuant")) * _num(x.get("closePrice")) for x in rows)
+    hold = _num(rows[0].get("foreignerHoldRatio"))
+    return {"frn_bil": f_amt / 1e8, "org_bil": o_amt / 1e8, "frn_hold": hold, "n": len(rows)}
 
 def check(code, name, days=60):
     end = datetime.date.today()
@@ -43,8 +66,8 @@ def main():
         ("338220", "뷰노"), ("099190", "아이센스"), ("451760", "컨텍"),
         ("456010", "아이씨티케이(투기)"),
     ]
-    print(f"# 유동성 정밀 검사 — 60일 평균 거래대금 기준, $50M={TEST_USD*USD_KRW/1e8:.0f}억원, 참여율 {PART:.0%}")
-    print(f"{'종목':<16} {'현재가':>10} {'일평균대금(억)':>12} {'$50M소요(일)':>12} {'52주 고/저 대비':>18}")
+    print(f"# 유동성·수급 정밀 검사 — 60일 평균 거래대금, $50M={TEST_USD*USD_KRW/1e8:.0f}억원, 참여율 {PART:.0%}, 수급 20영업일")
+    print(f"{'종목':<16} {'현재가':>10} {'일평균대금(억)':>12} {'$50M소요(일)':>12} {'52주 고/저 대비':>18} {'외인20일(억)':>11} {'기관20일(억)':>11} {'외보유%':>7}")
     for code, name in targets:
         r = check(code, name)
         if "err" in r:
@@ -53,7 +76,12 @@ def main():
         hilo = ""
         if r["hi52"]:
             hilo = f"고점-{(1 - r['last'] / r['hi52']) * 100:.0f}% / 저점+{(r['last'] / r['lo52'] - 1) * 100:.0f}%"
-        print(f"{r['name']:<16} {r['last']:>10,.0f} {r['adv_bil']:>12.1f} {r['days50m']:>12.0f} {hilo:>18}")
+        try:
+            fl = flow(code)
+        except Exception:
+            fl = None
+        fs = f"{fl['frn_bil']:>11.1f} {fl['org_bil']:>11.1f} {fl['frn_hold']:>7.2f}" if fl else f"{'수급없음':>31}"
+        print(f"{r['name']:<16} {r['last']:>10,.0f} {r['adv_bil']:>12.1f} {r['days50m']:>12.0f} {hilo:>18} {fs}")
 
 if __name__ == "__main__":
     main()

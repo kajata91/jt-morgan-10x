@@ -134,18 +134,130 @@
   .del:hover { color:var(--red); }
   .mynote { font-size:10.5px; color:var(--muted); margin-top:8px; line-height:1.6; }
 
-  /* 리포트 모달 */
-  .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.72); z-index:50; align-items:flex-start; justify-content:center; padding:34px 14px; overflow-y:auto; }
+  /* ===== 리포트 페이퍼 뷰어 (기관형 리서치 노트 — MS·JPM 문법) ===== */
+  .overlay { display:none; position:fixed; inset:0; background:rgba(4,6,5,.82); z-index:50; align-items:flex-start; justify-content:center; padding:0; overflow-y:auto; }
   .overlay.show { display:flex; }
-  .modal { background:var(--panel); border:1px solid var(--line); border-radius:18px; max-width:720px; width:100%; padding:24px 26px; }
-  .modal .mhead { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:6px; }
-  .modal h3 { font-size:18px; font-weight:800; }
-  .modal .msub { font-size:11.5px; color:var(--muted); margin-bottom:14px; }
-  .modal .close { background:var(--card2); border:1px solid var(--line); color:var(--text); border-radius:10px; padding:6px 12px; cursor:pointer; font-size:12px; flex-shrink:0; }
-  .modal .sec { margin-bottom:14px; }
-  .modal .sec h4 { font-size:12.5px; color:var(--green); margin-bottom:5px; }
-  .modal .sec p { font-size:12.5px; line-height:1.75; color:var(--text); }
-  .modal .mfoot { font-size:10.5px; color:var(--muted); border-top:1px solid var(--line); padding-top:10px; margin-top:14px; line-height:1.6; }
+  .paperwrap { width:100%; max-width:920px; margin:0 auto; padding:0 14px 60px; }
+  .paperbar { position:sticky; top:0; z-index:5; display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 4px; background:linear-gradient(rgba(4,6,5,.95),rgba(4,6,5,.75)); backdrop-filter:blur(4px); }
+  .paperbar .pbrand { font-size:11px; letter-spacing:.14em; color:#9aa59f; font-weight:700; }
+  .pbtn { background:var(--card2); border:1px solid var(--line); color:var(--text); border-radius:10px; padding:8px 14px; cursor:pointer; font-size:12px; font-weight:600; }
+  .pbtn.main { background:#0d5c36; border-color:#0d5c36; color:#fff; }
+  .pbtn:hover { filter:brightness(1.15); }
+
+  .paper { background:#fff; color:#24292e; width:100%; padding:52px 58px 40px; border-radius:4px; box-shadow:0 18px 60px rgba(0,0,0,.5);
+           font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif; }
+  .paper * { box-sizing:border-box; }
+
+  /* 마스트헤드 */
+  .p-mast { display:flex; justify-content:space-between; align-items:baseline; padding-bottom:10px; border-bottom:1.5px solid #14181c; }
+  .p-logo { font-size:16.5px; font-weight:800; letter-spacing:.01em; color:#14181c; }
+  .p-logo span { font-weight:500; font-size:10px; letter-spacing:.22em; color:#6b7480; margin-left:8px; }
+  .p-series { font-size:10.5px; font-weight:800; letter-spacing:.16em; color:#0d5c36; border-bottom:3px solid #0d5c36; padding-bottom:2px; }
+  .p-dateline { display:flex; justify-content:space-between; font-size:10px; color:#6b7480; padding:7px 0 0; letter-spacing:.02em; }
+
+  /* 커버 블록 */
+  .p-eyebrow { margin-top:34px; font-size:11.5px; font-weight:800; letter-spacing:.15em; color:#0d5c36; }
+  .p-headline { font-size:34px; font-weight:800; letter-spacing:-.5px; color:#14181c; line-height:1.2; margin-top:8px; }
+  .p-headline .p-code { font-size:15px; font-weight:600; color:#6b7480; letter-spacing:.04em; margin-left:10px; }
+  .p-deck { font-size:14.5px; line-height:1.65; color:#4a5460; margin-top:12px; max-width:660px; }
+
+  /* 레이팅 스트립 */
+  .p-rating { display:grid; grid-template-columns:repeat(auto-fit,minmax(118px,1fr)); border:1px solid #d9dee3; border-radius:8px; overflow:hidden; margin-top:22px; }
+  .p-rating .cell { padding:11px 14px; border-right:1px solid #e6eaee; background:#fafbfc; }
+  .p-rating .cell:last-child { border-right:none; }
+  .p-rating .k { font-size:9.5px; font-weight:700; letter-spacing:.08em; color:#6b7480; }
+  .p-rating .v { font-size:16px; font-weight:800; color:#14181c; margin-top:3px; letter-spacing:-.2px; }
+  .p-rating .s { font-size:9.5px; color:#6b7480; margin-top:2px; }
+  .p-rating .up { color:#0a7d43; } .p-rating .down { color:#c0392b; } .p-rating .gold { color:#a2701e; }
+
+  /* 본문 섹션 */
+  .p-body { margin-top:26px; }
+  .p-sec { margin-top:22px; break-inside:avoid; }
+  .p-sec .p-h { display:flex; align-items:baseline; gap:9px; border-bottom:1px solid #e6eaee; padding-bottom:6px; margin-bottom:9px; }
+  .p-sec .p-num { font-size:12px; font-weight:800; color:#0d5c36; letter-spacing:.05em; flex-shrink:0; }
+  .p-sec h2 { font-size:14.5px; font-weight:800; color:#14181c; letter-spacing:-.1px; }
+  .p-sec h2 .en { font-size:10px; font-weight:600; color:#8a95a1; letter-spacing:.06em; margin-left:7px; }
+  .p-sec p { font-size:12.5px; line-height:1.85; color:#333a41; text-align:justify; }
+
+  /* Exhibit (차트·표 공통 틀) */
+  .p-ex { margin:16px 0 6px; border-top:2px solid #14181c; padding-top:8px; break-inside:avoid; }
+  .p-excap { font-size:11px; color:#14181c; margin-bottom:10px; }
+  .p-excap b { font-weight:800; color:#0d5c36; }
+  .p-src { font-size:9px; color:#8a95a1; margin-top:8px; line-height:1.5; }
+
+  /* KPI 그리드 */
+  .p-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(104px,1fr)); gap:8px; }
+  .p-kpis .cell { border:1px solid #e6eaee; border-radius:6px; padding:9px 11px; background:#fff; }
+  .p-kpis .k { font-size:9px; font-weight:700; letter-spacing:.06em; color:#6b7480; }
+  .p-kpis .v { font-size:14.5px; font-weight:800; color:#14181c; margin-top:3px; letter-spacing:-.2px; }
+  .p-kpis .s { font-size:9px; color:#8a95a1; margin-top:2px; }
+  .p-kpis .up .v { color:#0a7d43; } .p-kpis .down .v { color:#c0392b; }
+
+  /* 시나리오 (확률 스택바 + 표) */
+  .p-scen-bar { display:flex; height:26px; border-radius:5px; overflow:hidden; margin-bottom:10px; }
+  .p-scen-bar div { display:flex; align-items:center; justify-content:center; font-size:9.5px; font-weight:800; color:#fff; letter-spacing:.03em; }
+  .p-scen-bar .bull { background:#0a7d43; } .p-scen-bar .base { background:#29506d; } .p-scen-bar .bear { background:#b3402e; }
+  table.p-tbl { width:100%; border-collapse:collapse; font-size:11px; }
+  table.p-tbl th { text-align:left; font-size:9.5px; font-weight:700; letter-spacing:.05em; color:#6b7480; border-bottom:1px solid #14181c; padding:5px 8px; }
+  table.p-tbl td { padding:7px 8px; border-bottom:1px solid #e6eaee; color:#333a41; line-height:1.55; vertical-align:top; }
+  table.p-tbl td.r, table.p-tbl th.r { text-align:right; font-variant-numeric:tabular-nums; }
+  table.p-tbl .tag { display:inline-block; font-size:9px; font-weight:800; padding:2px 7px; border-radius:4px; color:#fff; }
+  table.p-tbl .tag.bull { background:#0a7d43; } table.p-tbl .tag.base { background:#29506d; } table.p-tbl .tag.bear { background:#b3402e; }
+
+  /* 스코어카드 히트맵 */
+  .p-score { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; }
+  .p-score .cell { border-radius:6px; padding:9px 11px; border:1px solid transparent; }
+  .p-score .cell.good { background:#e6f3ea; border-color:#bfdfca; }
+  .p-score .cell.mid  { background:#fbf4e2; border-color:#ecdcb0; }
+  .p-score .cell.bad  { background:#fbe9e5; border-color:#eec7bf; }
+  .p-score .k { font-size:9.5px; font-weight:700; color:#4a5460; }
+  .p-score .v { font-size:12px; font-weight:800; margin-top:3px; color:#14181c; }
+  .p-score .cell.good .v { color:#0a6b3b; } .p-score .cell.mid .v { color:#8a6414; } .p-score .cell.bad .v { color:#a33422; }
+  .p-score .s { font-size:9px; color:#6b7480; margin-top:2px; line-height:1.4; }
+
+  /* 수평 바 차트 */
+  .p-bars .row { display:flex; align-items:center; gap:10px; margin-bottom:7px; }
+  .p-bars .lbl { flex:0 0 128px; font-size:10.5px; font-weight:600; color:#4a5460; text-align:right; }
+  .p-bars .trk { flex:1; background:#eef1f4; border-radius:4px; height:18px; position:relative; }
+  .p-bars .fill { height:100%; border-radius:4px; background:#0d5c36; min-width:2px; }
+  .p-bars .fill.alt { background:#29506d; } .p-bars .fill.warn { background:#b3402e; }
+  .p-bars .val { flex:0 0 76px; font-size:11.5px; font-weight:800; color:#14181c; font-variant-numeric:tabular-nums; }
+
+  /* 콜아웃 */
+  .p-call { border-left:4px solid #8a95a1; background:#f6f8f9; border-radius:0 8px 8px 0; padding:12px 16px; margin-top:18px; break-inside:avoid; }
+  .p-call .t { font-size:11.5px; font-weight:800; margin-bottom:5px; color:#3c454e; letter-spacing:.02em; }
+  .p-call p { font-size:11.5px; line-height:1.8; color:#3c454e; text-align:justify; }
+  .p-call.risk { border-color:#b3402e; background:#fdf3f1; } .p-call.risk .t { color:#a33422; }
+  .p-call.edge { border-color:#0d5c36; background:#eef6f0; } .p-call.edge .t { color:#0a6b3b; }
+  .p-call.audit { border-color:#a2701e; background:#fbf6e9; } .p-call.audit .t { color:#8a6414; }
+
+  /* 결론 박스 */
+  .p-concl { border:1.5px solid #0d5c36; border-radius:8px; padding:14px 18px; margin-top:22px; background:#f2f8f4; break-inside:avoid; }
+  .p-concl .t { font-size:10.5px; font-weight:800; letter-spacing:.15em; color:#0d5c36; margin-bottom:6px; }
+  .p-concl p { font-size:12.5px; line-height:1.85; color:#22302a; font-weight:500; text-align:justify; }
+
+  /* 풋 밴드 */
+  .p-foot { margin-top:30px; border-top:1.5px solid #14181c; padding-top:9px; display:flex; justify-content:space-between; gap:14px; }
+  .p-foot .fl { font-size:9px; color:#8a95a1; line-height:1.6; max-width:70%; }
+  .p-foot .fr { font-size:10px; font-weight:800; color:#14181c; white-space:nowrap; }
+  .p-foot .fr span { color:#0d5c36; }
+
+  @media (max-width:640px) { .paper { padding:30px 22px 26px; } .p-headline { font-size:25px; } }
+
+  /* 인쇄 = PDF 저장 (A4 규격) */
+  @page { size:A4; margin:13mm 11mm; }
+  @media print {
+    body { background:#fff !important; }
+    .app, .gatewrap, .paperbar { display:none !important; }
+    .overlay, .overlay.show { display:block !important; position:static !important; background:#fff !important; padding:0 !important; overflow:visible !important; }
+    .paperwrap { max-width:none; padding:0; }
+    .paper { box-shadow:none !important; border-radius:0; padding:0 2mm !important; width:100% !important; }
+    .paper, .paper * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+    .p-sec, .p-ex, .p-call, .p-concl, .p-rating { break-inside:avoid; }
+    .p-rating { grid-template-columns:repeat(auto-fit,minmax(76px,1fr)); }
+    .p-rating .v { font-size:13.5px; }
+    .p-kpis { grid-template-columns:repeat(auto-fit,minmax(86px,1fr)); }
+  }
 
   /* 잠금 게이트 */
   .gatewrap { position:fixed; inset:0; background:var(--bg); z-index:100; display:flex; align-items:center; justify-content:center; padding:20px; }
@@ -393,18 +505,17 @@
   </main>
 </div>
 
-<!-- 종목 리포트 모달 -->
+<!-- 종목 리포트 — 기관형 페이퍼 뷰어 -->
 <div class="overlay" id="overlay">
-  <div class="modal">
-    <div class="mhead">
-      <div>
-        <h3 id="mTitle"></h3>
-        <div class="msub" id="mSub"></div>
+  <div class="paperwrap">
+    <div class="paperbar">
+      <span class="pbrand">TENVER RESEARCH — 기관형 리서치 노트</span>
+      <div style="display:flex;gap:8px">
+        <button class="pbtn main" id="mPdf">⬇ PDF로 저장</button>
+        <button class="pbtn" id="mClose">닫기 ✕</button>
       </div>
-      <button class="close" id="mClose">닫기 ✕</button>
     </div>
-    <div id="mBody"></div>
-    <div class="mfoot">본 리포트는 텐버의 리서치 기록(강령 v1.2 + 실전 기법서 적용, GIC 4렌즈 심의)이며 투자 참고 자료입니다. 투자 권유가 아니며, 최종 판단과 책임은 투자자 본인에게 있습니다. 수치 기준일: 데이터 파일의 최근 업데이트 시점.</div>
+    <div class="paper" id="paperSheet"></div>
   </div>
 </div>
 
@@ -572,20 +683,100 @@
 
   // (KOSPI 추이 카드는 v1.1에서 '내 자산 — 10배 목표' 카드로 대체됨 — updateAssetCard 참조)
 
-  // ---- 리포트 모달 ----
+  // ---- 리포트 페이퍼 뷰어 (기관형 리서치 노트) ----
   const overlay = document.getElementById("overlay");
+
+  // 블록 렌더러: 기존 {h,p} 서술 + 신규 시각 블록({t:"kpi"|"scenario"|"score"|"bars"|"table"|"callout"})
+  function renderPaper(meta, blocks) {
+    let exN = 0;
+    const excap = t => t ? `<div class="p-excap"><b>Exhibit ${++exN}</b>&nbsp;|&nbsp; ${t}</div>` : "";
+    const src = s => s ? `<div class="p-src">자료: ${s}</div>` : "";
+    const cellTone = t => t === "up" ? " up" : t === "down" ? " down" : t === "gold" ? " gold" : "";
+
+    const bodyHtml = (blocks || []).map(b => {
+      if (b.t === "kpi") return `<div class="p-ex">${excap(b.title)}<div class="p-kpis">${b.items.map(c =>
+        `<div class="cell${c.tone ? " " + c.tone : ""}"><div class="k">${c.k}</div><div class="v">${c.v}</div>${c.s ? `<div class="s">${c.s}</div>` : ""}</div>`).join("")}</div>${src(b.src)}</div>`;
+
+      if (b.t === "scenario") {
+        const bar = b.rows.map(r => `<div class="${r.tone}" style="width:${r.prob}%">${r.name} ${r.prob}%</div>`).join("");
+        const rows = b.rows.map(r => `<tr><td><span class="tag ${r.tone}">${r.name}</span></td><td class="r">${r.prob}%</td><td class="r"><b>${r.ret}</b></td><td>${r.logic}</td></tr>`).join("");
+        return `<div class="p-ex">${excap(b.title)}<div class="p-scen-bar">${bar}</div><table class="p-tbl"><thead><tr><th>시나리오</th><th class="r">확률</th><th class="r">경로</th><th>논거</th></tr></thead><tbody>${rows}</tbody></table>${src(b.src)}</div>`;
+      }
+
+      if (b.t === "score") return `<div class="p-ex">${excap(b.title)}<div class="p-score">${b.cells.map(c =>
+        `<div class="cell ${c.g}"><div class="k">${c.k}</div><div class="v">${c.v}</div>${c.s ? `<div class="s">${c.s}</div>` : ""}</div>`).join("")}</div>${src(b.src)}</div>`;
+
+      if (b.t === "bars") {
+        const mx = Math.max(...b.series.map(x => Math.abs(x.val)), 1e-9);
+        return `<div class="p-ex">${excap(b.title)}<div class="p-bars">${b.series.map(x =>
+          `<div class="row"><div class="lbl">${x.label}</div><div class="trk"><div class="fill${x.c ? " " + x.c : ""}" style="width:${(Math.abs(x.val) / mx * 100).toFixed(1)}%"></div></div><div class="val">${x.txt ?? x.val}</div></div>`).join("")}</div>${b.note ? `<div class="p-src">${b.note}</div>` : ""}${src(b.src)}</div>`;
+      }
+
+      if (b.t === "table") return `<div class="p-ex">${excap(b.title)}<table class="p-tbl"><thead><tr>${b.cols.map((c, i) =>
+        `<th${(b.align || [])[i] === "r" ? ' class="r"' : ""}>${c}</th>`).join("")}</tr></thead><tbody>${b.rows.map(r =>
+        `<tr>${r.map((c, i) => `<td${(b.align || [])[i] === "r" ? ' class="r"' : ""}>${c}</td>`).join("")}</tr>`).join("")}</tbody></table>${src(b.src)}</div>`;
+
+      if (b.t === "callout") return `<div class="p-call ${b.tone || ""}"><div class="t">${b.title}</div><p>${b.p}</p></div>`;
+
+      // 기본: {h,p} 서술 섹션 — 제목 문법 자동 격상
+      const h = b.h || "", p = b.p || "";
+      if (h.startsWith("⚔️")) return `<div class="p-call risk"><div class="t">RED FLAG — ${h.replace("⚔️", "").trim()}</div><p>${p}</p></div>`;
+      if (h.startsWith("📐")) return `<div class="p-call audit"><div class="t">AUDIT NOTE — ${h.replace("📐", "").trim()}</div><p>${p}</p></div>`;
+      if (h.replace(/\s/g, "") === "결론") return `<div class="p-concl"><div class="t">CONCLUSION — 텐버의 결론</div><p>${p}</p></div>`;
+      const m = h.match(/^([ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫ]+)\.\s*(.+)$/);
+      let num = "", tit = h, en = "";
+      if (m) { num = m[1]; tit = m[2]; }
+      const em = tit.match(/^(.*?)\s*\(([A-Za-z][^)]*)\)\s*$/);
+      if (em) { tit = em[1]; en = em[2]; }
+      return `<section class="p-sec"><div class="p-h">${num ? `<span class="p-num">SECTION ${num}</span>` : ""}<h2>${tit}${en ? `<span class="en">${en}</span>` : ""}</h2></div><p>${p}</p></section>`;
+    }).join("");
+
+    const rating = (meta.rating && meta.rating.length) ? `<div class="p-rating">${meta.rating.map(c =>
+      `<div class="cell"><div class="k">${c.k}</div><div class="v${cellTone(c.tone)}">${c.v}</div>${c.s ? `<div class="s">${c.s}</div>` : ""}</div>`).join("")}</div>` : "";
+
+    document.getElementById("paperSheet").innerHTML = `
+      <div class="p-mast"><div class="p-logo">JT MORGAN<span>10X RESEARCH</span></div><div class="p-series">TENBAGGER INSIGHT</div></div>
+      <div class="p-dateline"><span>${meta.dateline || ""}</span><span>${meta.docno || ""} · PRIVATE &amp; CONFIDENTIAL</span></div>
+      <div class="p-eyebrow">${meta.eyebrow || "TENVER RESEARCH"}</div>
+      <h1 class="p-headline">${meta.title}${meta.code ? `<span class="p-code">${meta.code}</span>` : ""}</h1>
+      ${meta.deck ? `<div class="p-deck">${meta.deck}</div>` : ""}
+      ${rating}
+      <div class="p-body">${bodyHtml}</div>
+      <div class="p-foot"><div class="fl">본 리포트는 텐버의 리서치 기록(강령 v1.4 + 실전 기법서, GIC 4렌즈·RED_TEAM 심의)이며 투자 참고 자료입니다. 투자 권유가 아니며, 최종 판단과 책임은 투자자 본인에게 있습니다. 수치 기준일: ${D.updatedAt}. 출처 계층: DART 공시 &gt; 실측(quant_check·dart_watch) &gt; 언론 보도.</div><div class="fr">JT MORGAN <span>| 10X</span></div></div>`;
+    overlay.classList.add("show");
+    document.querySelector(".paperwrap").scrollTop = 0;
+    overlay.scrollTop = 0;
+  }
+
   function openReport(kind, idx) {
     const s = (kind === "main" ? D.main10 : D.bench10)[idx];
     if (!s || !s.report) return;
-    document.getElementById("mTitle").textContent = `${s.name} (${s.code})`;
-    document.getElementById("mSub").textContent = kind === "main"
-      ? `${s.sector} · 기준가 ${won(s.basePrice)} → 목표가 ${won(s.targetPrice)} · 현재가 ${won(s.currentPrice)} · 확신도 ${s.confidence}`
-      : (s.note || "");
-    document.getElementById("mBody").innerHTML = s.report.map(sec =>
-      `<div class="sec"><h4>${sec.h}</h4><p>${sec.p}</p></div>`).join("");
-    overlay.classList.add("show");
+    const up = s.currentPrice && s.basePrice ? (s.currentPrice / s.basePrice - 1) * 100 : null;
+    const mult = s.targetPrice && s.currentPrice ? s.targetPrice / s.currentPrice : null;
+    const rating = [];
+    rating.push({ k: "분류", v: kind === "main" ? "주전 편입" : (s.demoted ? "후보 관찰" : "추가 추천"), s: s.sector || "", tone: kind === "main" ? "gold" : "" });
+    if (s.confidence) rating.push({ k: "확신도", v: s.confidence });
+    if (s.basePrice) rating.push({ k: "기준가", v: won(s.basePrice), s: "2026-07-01 확정" });
+    if (s.currentPrice) rating.push({ k: "현재가", v: won(s.currentPrice), s: up !== null ? pct(up) + " vs 기준가" : "", tone: up >= 0 ? "up" : "down" });
+    if (s.targetPrice) rating.push({ k: "목표가", v: won(s.targetPrice), s: "판정일 2032-08-05" });
+    if (mult) rating.push({ k: "잔여 배수", v: "×" + mult.toFixed(1), s: "현재가 대비" });
+    renderPaper({
+      eyebrow: kind === "main" ? "CORE CONVICTION — 주전 심층 리서치" : (s.demoted ? "BENCH WATCH — 강등·재승격 추적 노트" : "BENCH WATCH — 후보 관찰 노트"),
+      title: s.name, code: (s.code || "") + " KQ",
+      deck: s.thesis || s.note || "",
+      dateline: `${D.updatedAt} 기준 · 열람 ${localISO(Date.now())}`,
+      docno: `TVR-${s.code || "0000"}-${(D.updatedAt || "").slice(0, 10).replace(/-/g, "")}`,
+      rating
+    }, s.report);
   }
   document.getElementById("mClose").onclick = () => overlay.classList.remove("show");
+  document.getElementById("mPdf").onclick = () => {
+    const t = document.title;
+    const name = (document.querySelector(".p-headline")?.textContent || "리포트").trim().split(/\s/)[0];
+    document.title = `텐버리서치_${name}_${localISO(Date.now())}`;
+    window.print();
+    setTimeout(() => { document.title = t; }, 500);
+  };
   overlay.onclick = e => { if (e.target === overlay) overlay.classList.remove("show"); };
   window.openReport = openReport;
 
@@ -850,13 +1041,17 @@
 
   // ================= v3.0 — 종목 상담 · TOP GUNS · WISDOM · REFLECTION · 기간 증감 =================
 
-  // 공용: 임의 문서 모달 (상담 보고서·반성문)
-  function openDoc(title, sub, sections) {
-    document.getElementById("mTitle").textContent = title;
-    document.getElementById("mSub").textContent = sub || "";
-    document.getElementById("mBody").innerHTML = (sections || []).map(sec =>
-      `<div class="sec"><h4>${sec.h}</h4><p>${sec.p}</p></div>`).join("");
-    overlay.classList.add("show");
+  // 공용: 임의 문서 페이퍼 (상담 보고서·반성문)
+  function openDoc(title, sub, sections, opts) {
+    const o = opts || {};
+    renderPaper({
+      eyebrow: o.eyebrow || "TENVER RESEARCH — 리서치 노트",
+      title, code: o.code || "",
+      deck: sub || "",
+      dateline: `${D.updatedAt} 기준 · 열람 ${localISO(Date.now())}`,
+      docno: o.docno || `TVR-DOC-${localISO(Date.now()).replace(/-/g, "")}`,
+      rating: o.rating || []
+    }, sections);
   }
   window.openDoc = openDoc;
 
@@ -875,7 +1070,8 @@
   function openAnyReport(hit) {
     if (hit.kind === "consult") {
       const c = consults[hit.i];
-      openDoc(`${c.name}${c.code ? " (" + c.code + ")" : ""}`, `텐버 종목 상담 보고서 · ${c.date}${c.verdict ? " · 판정: " + c.verdict : ""}`, c.report);
+      openDoc(c.name, `텐버 종목 상담 보고서 · ${c.date}${c.verdict ? " · 판정: " + c.verdict : ""}`, c.report,
+        { eyebrow: "EQUITY CONSULT — 종목 상담 보고서", code: c.code ? c.code + " KQ" : "", docno: `TVR-C${(c.code || "0000")}-${(c.date || "").replace(/-/g, "")}` });
     } else openReport(hit.kind, hit.i);
   }
   function renderConsult() {
@@ -1035,7 +1231,8 @@
     `<span style="color:var(--muted);font-size:12px">첫 반성문 준비 중 — 매주 주말 등록됩니다.</span>`;
     document.querySelectorAll("[data-rf]").forEach(el => el.onclick = () => {
       const r = rs[Number(el.dataset.rf)];
-      openDoc(r.title, `텐버 주간 반성문 · ${r.date}${r.grade ? " · 자체 평점 " + r.grade : ""}`, r.sections);
+      openDoc(r.title, `텐버 주간 반성문 · ${r.date}${r.grade ? " · 자체 평점 " + r.grade : ""}`, r.sections,
+        { eyebrow: "WEEKLY REFLECTION — 주간 반성문", docno: `TVR-R-${(r.date || "").replace(/-/g, "")}` });
     });
   }
 

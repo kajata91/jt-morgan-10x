@@ -84,6 +84,30 @@ for anchor in ["renderPaper", "paperSheet", "mPdf", "@media print", "gatePass", 
 check("index.html에 평문 비밀번호 없음", "Sarang" not in html)
 check("data.js가 gitignore에 있음", "data.js" in open(os.path.join(APP, ".gitignore"), encoding="utf-8").read())
 
+# 6-2. 신선도 카나리아 (제2호 반성문 시정 서약 ① — 유령 실행 방어)
+# 감시 지표를 감시 대상과 같은 것으로 만든다: prices.js는 Actions 소관이라 텐버 정지를 가린다.
+import datetime as _dt
+ROOT = os.path.dirname(APP)  # 프로젝트 루트(옵시디언 문서 위치)
+
+def _days_since_commit(path):
+    r = subprocess.run(["git", "-C", APP, "log", "-1", "--format=%ct", "--", path],
+                       capture_output=True, text=True, timeout=20)
+    ts = (r.stdout or "").strip()
+    if not ts:
+        return None
+    return (_dt.datetime.now() - _dt.datetime.fromtimestamp(int(ts))).days
+
+d = _days_since_commit("data.enc.js")
+check("신선도 — data.enc.js 최종 커밋 10일 이내", d is not None and d <= 10,
+      f"{d}일 경과" if d is not None else "커밋 이력 없음")
+
+ledger = os.path.join(ROOT, "11 Belief Ledger — 신념 대장.md")
+if os.path.exists(ledger):
+    dl = (_dt.datetime.now() - _dt.datetime.fromtimestamp(os.path.getmtime(ledger))).days
+    check("신선도 — 신념 대장 최종 수정 14일 이내", dl <= 14, f"{dl}일 경과")
+else:
+    check("신선도 — 신념 대장 존재", False, ledger)
+
 # 7. (--net) 라이브 데이터 1건씩 — 네이버 시세·DART RSS
 if "--net" in sys.argv:
     try:

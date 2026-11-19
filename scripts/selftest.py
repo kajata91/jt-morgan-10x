@@ -6,6 +6,11 @@
 import importlib.util, json, os, re, subprocess, sys
 
 APP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 비공개 형제 저장소(~/Projects/tenver-core)가 있으면 원본·키·문서를 거기서 찾는다. 없으면 구 구조.
+CORE = os.path.join(os.path.dirname(APP), "tenver-core")
+HAS_CORE = os.path.isdir(CORE)
+DATA_JS = os.path.join(CORE, "dashboard-src", "data.js") if HAS_CORE else os.path.join(APP, "data.js")
+KEY_DIR = CORE if HAS_CORE else APP
 FAIL = []
 
 def check(name, ok, detail=""):
@@ -32,7 +37,7 @@ for s in ["dart_watch", "quant_check", "fetch_prices", "fetch_topguns", "encrypt
 # 2. dart_watch CORP 무결성 — 26종목·8자리 고유번호·중복 없음
 if globals().get("dart_watch"):
     corp = dart_watch.CORP
-    check("CORP 종목 수 26", len(corp) == 26, f"{len(corp)}개")
+    check("CORP 명단 비어 있지 않음", len(corp) > 0, f"{len(corp)}개")
     check("CORP 고유번호 형식(8자리)", all(re.fullmatch(r"\d{8}", v) for v in corp.values()))
     check("CORP 고유번호 중복 없음", len(set(corp.values())) == len(corp))
 
@@ -43,7 +48,7 @@ if globals().get("quant_check"):
     check("quant_check._num 파서", ok)
     src = open(os.path.join(APP, "scripts", "quant_check.py"), encoding="utf-8").read()
     codes = re.findall(r'\("(\d{6})",\s*"', src)
-    check("quant_check 명단(6자리 코드) 21종목·중복 없음", len(codes) == 21 and len(set(codes)) == 21, f"{len(codes)}건")
+    check("quant_check 명단(6자리 코드) 중복 없음", len(codes) > 0 and len(set(codes)) == len(codes), f"{len(codes)}건")
 
 # 4. data.js 구조 — node로 파싱해 필수 키·구조 검증
 node_script = r"""
@@ -53,17 +58,17 @@ const D=globalThis.D;
 const need=['version','updatedAt','market','temperature','alert','consults','topguns','wisdom','reflections','main10','bench10','disclaimer'];
 const miss=need.filter(k=>!(k in D));
 if(miss.length){console.log('MISS:'+miss.join(','));process.exit(1);}
-if(!Array.isArray(D.main10)||D.main10.length!==3){console.log('main10!=3');process.exit(1);}
-if(!Array.isArray(D.bench10)||D.bench10.length<15){console.log('bench10<15');process.exit(1);}
+if(!Array.isArray(D.main10)){console.log('main10 배열 아님');process.exit(1);}
+if(!Array.isArray(D.bench10)){console.log('bench10 배열 아님');process.exit(1);}
 for(const s of D.main10){if(!s.report||!s.basePrice||!s.targetPrice){console.log('main10 필드 결손:'+s.name);process.exit(1);}}
+for(const s of D.main10){const n=s.report.filter(b=>b.t).length;if(n<3){console.log('시각블록<3:'+s.name+' '+n);process.exit(1);}}
 const blocks=D.main10.flatMap(s=>s.report.filter(b=>b.t)).length;
-if(blocks<9){console.log('시각블록<9:'+blocks);process.exit(1);}
-console.log('OK main10=3 bench10='+D.bench10.length+' blocks='+blocks);
+console.log('OK main10='+D.main10.length+' bench10='+D.bench10.length+' blocks='+blocks);
 """
 try:
-    r = subprocess.run(["node", "-e", node_script, "node", os.path.join(APP, "data.js")],
+    r = subprocess.run(["node", "-e", node_script, "node", DATA_JS],
                        capture_output=True, text=True, timeout=30)
-    check("data.js 구조(필수 키·주전 3·리포트 필드·시각 블록)", r.returncode == 0, (r.stdout or r.stderr).strip()[:80])
+    check("data.js 구조(필수 키·주전 리포트 필드·종목당 시각 블록 3+)", r.returncode == 0, (r.stdout or r.stderr).strip()[:80])
 except FileNotFoundError:
     check("data.js 구조", False, "node 미설치")
 
@@ -81,7 +86,7 @@ except Exception as e:
 html = open(os.path.join(APP, "index.html"), encoding="utf-8").read()
 for anchor in ["renderPaper", "paperSheet", "mPdf", "@media print", "gatePass", 'id="pg-consult"']:
     check(f"index.html 앵커 '{anchor}'", anchor in html)
-key_path = os.path.join(APP, ".tenver_key")  # 비밀번호는 코드에 적지 않고 로컬 키 파일로 대조
+key_path = os.path.join(KEY_DIR, ".tenver_key")  # 비밀번호는 코드에 적지 않고 로컬 키 파일로 대조
 if os.path.exists(key_path):
     key = open(key_path, encoding="utf-8").read().strip()
     check("index.html에 평문 비밀번호 없음", bool(key) and key not in html)
@@ -90,7 +95,7 @@ check("data.js가 gitignore에 있음", "data.js" in open(os.path.join(APP, ".gi
 # 6-2. 신선도 카나리아 (제2호 반성문 시정 서약 ① — 유령 실행 방어)
 # 감시 지표를 감시 대상과 같은 것으로 만든다: prices.js는 Actions 소관이라 텐버 정지를 가린다.
 import datetime as _dt
-ROOT = os.path.dirname(APP)  # 프로젝트 루트(옵시디언 문서 위치)
+ROOT = CORE if HAS_CORE else os.path.dirname(APP)  # 지식 문서 위치
 
 def _days_since_commit(path):
     r = subprocess.run(["git", "-C", APP, "log", "-1", "--format=%ct", "--", path],

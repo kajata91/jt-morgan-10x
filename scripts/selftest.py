@@ -139,7 +139,7 @@ if os.path.exists(ledger):
 else:
     check("신선도 — 신념 대장 존재", False, ledger)
 
-# 7. (--net) 라이브 데이터 1건씩 — 네이버 시세·DART RSS
+# 7. (--net) 라이브 데이터 1건씩 — 네이버 시세·DART 기간 검색
 if "--net" in sys.argv:
     try:
         fl = quant_check.flow("005930", days=3)
@@ -148,9 +148,9 @@ if "--net" in sys.argv:
         check("네이버 trend API 라이브", False, str(e)[:60])
     try:
         rows = dart_watch.pull("삼성전자", "00126380", __import__("datetime").datetime.now(dart_watch.KST) - __import__("datetime").timedelta(days=30))
-        check("DART companyRSS 라이브", isinstance(rows, list), f"{len(rows)}건/30일")
+        check("DART 기간 검색 라이브", isinstance(rows, list) and len(rows) > 0, f"{len(rows)}건/30일")
     except Exception as e:
-        check("DART companyRSS 라이브", False, str(e)[:60])
+        check("DART 기간 검색 라이브", False, str(e)[:60])
 
 print(f"\n{'='*40}\n결과: {'전 항목 PASS ✅' if not FAIL else '실패 ' + str(len(FAIL)) + '건 ❌ — ' + ', '.join(FAIL)}")
 sys.exit(1 if FAIL else 0)

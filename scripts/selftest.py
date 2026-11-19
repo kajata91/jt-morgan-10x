@@ -34,7 +34,19 @@ for s in ["dart_watch", "quant_check", "fetch_prices", "fetch_topguns", "encrypt
         globals()[s] = None
         check(f"임포트 {s}.py", False, str(e)[:80])
 
-# 2. dart_watch CORP 무결성 — 26종목·8자리 고유번호·중복 없음
+# 2. 원장(tenver-core/ledger/positions.json) 무결성 — 스크립트들이 읽는 단일 명단
+TIERS = {"주전", "정찰", "후보", "투기", "재심대기", "제외"}
+led = None
+try:
+    led = json.load(open(os.path.join(CORE, "ledger", "positions.json"), encoding="utf-8"))
+    lc = [p["code"] for p in led["positions"]]
+    check("원장 종목코드(6자리) 중복 없음",
+          len(lc) > 0 and all(re.fullmatch(r"\d{6}", c) for c in lc) and len(set(lc)) == len(lc), f"{len(lc)}종목")
+    check("원장 구분값 유효", all(p["tier"] in TIERS for p in led["positions"]))
+except Exception as e:
+    check("원장 읽기", False, str(e)[:80])
+
+# 2-1. dart_watch CORP 무결성 — 원장에서 읽은 감시 명단의 8자리 고유번호·중복 없음
 if globals().get("dart_watch"):
     corp = dart_watch.CORP
     check("CORP 명단 비어 있지 않음", len(corp) > 0, f"{len(corp)}개")
@@ -46,9 +58,7 @@ if globals().get("quant_check"):
     n = quant_check._num
     ok = n("+7,326") == 7326.0 and n("-89") == -89.0 and n("4.88%") == 4.88 and n(None) == 0.0
     check("quant_check._num 파서", ok)
-    src = open(os.path.join(APP, "scripts", "quant_check.py"), encoding="utf-8").read()
-    codes = re.findall(r'\("(\d{6})",\s*"', src)
-    check("quant_check 명단(6자리 코드) 중복 없음", len(codes) > 0 and len(set(codes)) == len(codes), f"{len(codes)}건")
+    check("quant_check 명단을 원장에서 읽음", len(quant_check.load_targets()) > 0, f"{len(quant_check.load_targets())}종목")
 
 # 4. data.js 구조 — node로 파싱해 필수 키·구조 검증
 node_script = r"""
@@ -64,11 +74,21 @@ for(const s of D.main10){if(!s.report||!s.basePrice||!s.targetPrice){console.log
 for(const s of D.main10){const n=s.report.filter(b=>b.t).length;if(n<3){console.log('시각블록<3:'+s.name+' '+n);process.exit(1);}}
 const blocks=D.main10.flatMap(s=>s.report.filter(b=>b.t)).length;
 console.log('OK main10='+D.main10.length+' bench10='+D.bench10.length+' blocks='+blocks);
+console.log('CODES '+JSON.stringify({main:D.main10.map(s=>s.code),bench:D.bench10.map(s=>s.code)}));
 """
 try:
     r = subprocess.run(["node", "-e", node_script, "node", DATA_JS],
                        capture_output=True, text=True, timeout=30)
-    check("data.js 구조(필수 키·주전 리포트 필드·종목당 시각 블록 3+)", r.returncode == 0, (r.stdout or r.stderr).strip()[:80])
+    check("data.js 구조(필수 키·주전 리포트 필드·종목당 시각 블록 3+)", r.returncode == 0,
+          (r.stdout or r.stderr).strip().split("\n")[0][:80])
+    # 4-1. 대시보드 명단 = 원장 — 한쪽만 고치는 실수를 배포 전에 잡는다
+    m = re.search(r"^CODES (.*)$", r.stdout or "", re.M)
+    if led and m:
+        dj = json.loads(m.group(1))
+        want_main = {p["code"] for p in led["positions"] if p["tier"] == "주전"}
+        want_bench = {p["code"] for p in led["positions"] if p["tier"] in ("정찰", "후보", "투기")}
+        diff = (set(dj["main"]) ^ want_main) | (set(dj["bench"]) ^ want_bench)
+        check("data.js 명단 = 원장(주전 / 정찰·후보·투기)", not diff, "불일치 " + ",".join(sorted(diff)) if diff else "일치")
 except FileNotFoundError:
     check("data.js 구조", False, "node 미설치")
 
@@ -97,8 +117,8 @@ check("data.js가 gitignore에 있음", "data.js" in open(os.path.join(APP, ".gi
 import datetime as _dt
 ROOT = CORE if HAS_CORE else os.path.dirname(APP)  # 지식 문서 위치
 
-def _days_since_commit(path):
-    r = subprocess.run(["git", "-C", APP, "log", "-1", "--format=%ct", "--", path],
+def _days_since_commit(path, repo=APP):
+    r = subprocess.run(["git", "-C", repo, "log", "-1", "--format=%ct", "--", path],
                        capture_output=True, text=True, timeout=20)
     ts = (r.stdout or "").strip()
     if not ts:
@@ -111,7 +131,10 @@ check("신선도 — data.enc.js 최종 커밋 10일 이내", d is not None and 
 
 ledger = os.path.join(ROOT, "11 Belief Ledger — 신념 대장.md")
 if os.path.exists(ledger):
-    dl = (_dt.datetime.now() - _dt.datetime.fromtimestamp(os.path.getmtime(ledger))).days
+    # 저장소 안의 문서는 받은 시각이 수정 시각으로 찍히므로, 커밋 날짜로 잰다(구 구조는 수정 시각)
+    dl = _days_since_commit(os.path.basename(ledger), CORE) if HAS_CORE else None
+    if dl is None:
+        dl = (_dt.datetime.now() - _dt.datetime.fromtimestamp(os.path.getmtime(ledger))).days
     check("신선도 — 신념 대장 최종 수정 14일 이내", dl <= 14, f"{dl}일 경과")
 else:
     check("신선도 — 신념 대장 존재", False, ledger)

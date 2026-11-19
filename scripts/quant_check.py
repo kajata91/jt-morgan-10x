@@ -3,12 +3,22 @@
 # 강령 모듈 3 보강: GIC 블랙록 렌즈의 $50M 유동성 테스트를 정밀 수치로 자동화.
 # 데이터: FinanceDataReader(네이버 기반, 1순위) — 실패 시 해당 종목 "불확실" 표기.
 #         수급은 네이버 trend API(외국인·기관 순매수, 외국인 보유비율) — 2026-07 확보 라인.
-import json, ssl, sys, datetime, urllib.request
+import json, os, ssl, sys, datetime, urllib.request
 import FinanceDataReader as fdr
 
 USD_KRW = 1552  # 환율 (수동 갱신)
 TEST_USD = 50_000_000  # $50M 기관 포지션 테스트
 PART = 0.20  # 시장 참여율 상한 20%
+# 종목 명단은 코드에 적지 않는다 — 비공개 형제 저장소(tenver-core)의 원장에서 읽는다.
+LEDGER = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                      "tenver-core", "ledger", "positions.json")
+
+def load_targets():
+    """원장의 주전·정찰·후보·투기 종목을 [(코드, 표시명)]으로 돌려준다."""
+    with open(LEDGER, encoding="utf-8") as f:
+        ps = json.load(f)["positions"]
+    return [(p["code"], p["name"] if p["tier"] == "후보" else f'{p["name"]}({p["tier"]})')
+            for p in ps if p["tier"] in ("주전", "정찰", "후보", "투기")]
 
 def _num(s):
     """'+7,326' / '-89' / '4.88%' → float"""
@@ -56,16 +66,7 @@ def check(code, name, days=60):
         return {"code": code, "name": name, "err": str(e)[:60]}
 
 def main():
-    targets = [  # 2026-07-06 재설정 명단 (주전 4 / 정찰 2 / 후보 14 / 투기 1)
-        ("214430", "아이쓰리시스템(주전)"), ("445090", "에이직랜드(주전)"),
-        ("389650", "넥스트바이오메디컬(주전)"), ("260970", "에스앤디(주전)"),
-        ("053610", "프로텍(정찰)"), ("308430", "셀비온(정찰)"),
-        ("094360", "칩스앤미디어"), ("039200", "오스코텍"), ("083650", "비에이치아이"),
-        ("397030", "에이프릴바이오"), ("372320", "큐로셀"), ("253590", "네오셈"), ("121600", "나노신소재"),
-        ("484590", "삼양컴텍"), ("448710", "코츠테크놀로지"), ("272110", "케이엔제이"), ("092870", "엑시콘"),
-        ("338220", "뷰노"), ("099190", "아이센스"), ("451760", "컨텍"),
-        ("456010", "아이씨티케이(투기)"),
-    ]
+    targets = load_targets()
     print(f"# 유동성·수급 정밀 검사 — 60일 평균 거래대금, $50M={TEST_USD*USD_KRW/1e8:.0f}억원, 참여율 {PART:.0%}, 수급 20영업일")
     print(f"{'종목':<16} {'현재가':>10} {'일평균대금(억)':>12} {'$50M소요(일)':>12} {'52주 고/저 대비':>18} {'외인20일(억)':>11} {'기관20일(억)':>11} {'외보유%':>7}")
     for code, name in targets:

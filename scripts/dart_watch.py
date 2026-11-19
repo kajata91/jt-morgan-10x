@@ -6,29 +6,23 @@
 # 사용: python3 scripts/dart_watch.py              (최근 7일)
 #       python3 scripts/dart_watch.py --days 30    (기간 지정)
 #       python3 scripts/dart_watch.py --name 에스앤디 [--days 90]  (단일 종목)
-import ssl, sys, time, urllib.request, xml.etree.ElementTree as ET
+import json, os, ssl, sys, time, urllib.request, xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 
-# 2026-07-07 명단 (원장과 동기 — 재설정 시 갱신) — DART 고유번호는 RSS 채널명 역검증 완료
-CORP = {
-    # 주전 3
-    "아이쓰리시스템": "00612489", "넥스트바이오메디컬": "01385050", "에스앤디": "00560849",
-    # 정찰석 2
-    "프로텍": "00325112", "셀비온": "01275489",
-    # 후보 15 (0번 에이직랜드 포함)
-    "에이직랜드": "01540453", "칩스앤미디어": "00579971", "오스코텍": "00263654",
-    "비에이치아이": "00409788", "에이프릴바이오": "01375822", "큐로셀": "01492651",
-    "네오셈": "01170865", "나노신소재": "00439965", "삼양컴텍": "00141583",
-    "코츠테크놀로지": "00959210", "케이엔제이": "00769158", "엑시콘": "00611736",
-    "뷰노": "01344202", "아이센스": "00550994", "컨텍": "01685251",
-    # 투기 1
-    "아이씨티케이": "01373709",
-    # 관심 이벤트 감시 (재심 대기·게이트 관련)
-    "삼양식품": "00126955",   # 에스앤디 내재화 게이트
-    "에스티아이": "00298340", "듀켐바이오": "00867034", "티앤엘": "00608440",
-    "한중엔시에스": "00474588",
-}
+# 감시 명단은 코드에 적지 않는다 — 비공개 형제 저장소(tenver-core)의 원장에서 읽는다.
+LEDGER = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                      "tenver-core", "ledger", "positions.json")
+
+def load_corp():
+    """원장에서 {종목명: DART 고유번호}를 만든다 — 제외 종목을 뺀 전 구분 + 게이트 감시(watch_only)."""
+    with open(LEDGER, encoding="utf-8") as f:
+        led = json.load(f)
+    corp = {p["name"]: p["dart"] for p in led["positions"] if p.get("dart") and p["tier"] != "제외"}
+    corp.update({w["name"]: w["dart"] for w in led.get("watch_only", [])})
+    return corp
+
+CORP = load_corp()
 
 KST = timezone(timedelta(hours=9))
 CTX = ssl.create_default_context()
@@ -62,10 +56,10 @@ def main():
         days = int(args[args.index("--days") + 1])
     only = args[args.index("--name") + 1] if "--name" in args else None
 
-    targets = {only: CORP[only]} if only else CORP
     if only and only not in CORP:
-        print(f"미등록 종목: {only} — CORP 딕셔너리에 고유번호를 추가하세요", file=sys.stderr)
+        print(f"미등록 종목: {only} — 원장(tenver-core/ledger/positions.json)에 dart 고유번호를 추가하세요", file=sys.stderr)
         sys.exit(1)
+    targets = {only: CORP[only]} if only else CORP
 
     since = datetime.now(KST) - timedelta(days=days)
     hits, errs = [], []

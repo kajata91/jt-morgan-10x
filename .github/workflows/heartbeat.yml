@@ -1,0 +1,45 @@
+name: heartbeat
+
+# 텐버 정지 감지 — 리서치 데이터(data.enc.js)가 오래 갱신되지 않으면 실패 처리하고 이슈로 알린다.
+# 시세 봇(prices.js)은 독립적으로 돌기 때문에 텐버의 생존 신호가 될 수 없다.
+
+on:
+  schedule:
+    # 매주 화요일 09:00 KST (UTC 화 00:00) — 월요일 주간 점검 다음 날
+    - cron: "0 0 * * 2"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      STALE_DAYS: 8
+      TITLE: "텐버 정지 감지 — 리서치 데이터 갱신 없음"
+    steps:
+      - name: Check data.enc.js freshness
+        run: |
+          last=$(gh api "repos/$REPO/commits?path=data.enc.js&per_page=1" -q '.[0].commit.committer.date')
+          age=$(( ( $(date +%s) - $(date -d "$last" +%s) ) / 86400 ))
+          open=$(gh issue list -R "$REPO" --state open --limit 100 --json number,title \
+                 -q ".[] | select(.title == \"$TITLE\") | .number" | head -1)
+          echo "data.enc.js 최종 커밋: $last (${age}일 경과)"
+          if [ "$age" -lt "$STALE_DAYS" ]; then
+            if [ -n "$open" ]; then
+              gh issue close "$open" -R "$REPO" -c "복구 확인 — 최종 커밋 $last"
+            fi
+            exit 0
+          fi
+          body="data.enc.js 최종 커밋이 ${age}일 전($last)입니다. 주간 점검이 실행되지 않고 있습니다."
+          if [ -n "$open" ]; then
+            gh issue comment "$open" -R "$REPO" -b "$body"
+          else
+            gh issue create -R "$REPO" -t "$TITLE" -b "$body"
+          fi
+          echo "::error::$body"
+          exit 1

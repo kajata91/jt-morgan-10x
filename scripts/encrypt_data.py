@@ -8,16 +8,20 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 APP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 비공개 형제 저장소(~/Projects/tenver-core)가 있으면 원본·키를 거기서 읽는다. 없으면 구 구조(APP 안).
+CORE = os.path.join(os.path.dirname(APP), "tenver-core")
+SRC_DIR = os.path.join(CORE, "dashboard-src") if os.path.isdir(CORE) else APP
+KEY_DIR = CORE if os.path.isdir(CORE) else APP
 ITER = 300_000
 
 def main():
-    key_path = os.path.join(APP, ".tenver_key")
+    key_path = os.path.join(KEY_DIR, ".tenver_key")
     if not os.path.exists(key_path):
         print("ERROR: .tenver_key 파일이 없습니다 (비밀번호 1줄).", file=sys.stderr); sys.exit(1)
     passphrase = open(key_path, encoding="utf-8").read().strip()
     if len(passphrase) < 8:
         print("ERROR: 비밀번호는 8자 이상이어야 합니다.", file=sys.stderr); sys.exit(1)
-    src = os.path.join(APP, "data.js")
+    src = os.path.join(SRC_DIR, "data.js")
     plaintext = open(src, encoding="utf-8").read().encode("utf-8")
 
     salt = secrets.token_bytes(16)
@@ -32,7 +36,7 @@ def main():
         "iv": base64.b64encode(iv).decode(),
         "ct": base64.b64encode(ct).decode(),
     }
-    hint_path = os.path.join(APP, ".tenver_hint")  # 선택: 비밀번호 힌트(평문 노출 — 비밀번호를 유추시키지 않는 문구만)
+    hint_path = os.path.join(KEY_DIR, ".tenver_hint")  # 선택: 비밀번호 힌트(평문 노출 — 비밀번호를 유추시키지 않는 문구만)
     if os.path.exists(hint_path):
         hint = open(hint_path, encoding="utf-8").read().strip()
         if hint:

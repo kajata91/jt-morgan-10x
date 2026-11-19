@@ -5,7 +5,7 @@
 # DART OpenAPI 키 없이 작동(제목·링크·시각) — 원문 자동 검증은 키 확보 후 승격 예정.
 # 사용: python3 scripts/dart_watch.py              (최근 7일)
 #       python3 scripts/dart_watch.py --days 30    (기간 지정)
-#       python3 scripts/dart_watch.py --name 에스앤디 [--days 90]  (단일 종목)
+#       python3 scripts/dart_watch.py --name 종목명 [--days 90]  (단일 종목)
 import json, os, ssl, sys, time, urllib.request, xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime

@@ -147,7 +147,7 @@ if "--net" in sys.argv:
     except Exception as e:
         check("네이버 trend API 라이브", False, str(e)[:60])
     try:
-        rows = dart_watch.pull("삼성식품테스트", "00126955", __import__("datetime").datetime.now(dart_watch.KST) - __import__("datetime").timedelta(days=30))
+        rows = dart_watch.pull("삼성전자", "00126380", __import__("datetime").datetime.now(dart_watch.KST) - __import__("datetime").timedelta(days=30))
         check("DART companyRSS 라이브", isinstance(rows, list), f"{len(rows)}건/30일")
     except Exception as e:
         check("DART companyRSS 라이브", False, str(e)[:60])

@@ -81,7 +81,10 @@ except Exception as e:
 html = open(os.path.join(APP, "index.html"), encoding="utf-8").read()
 for anchor in ["renderPaper", "paperSheet", "mPdf", "@media print", "gatePass", 'id="pg-consult"']:
     check(f"index.html 앵커 '{anchor}'", anchor in html)
-check("index.html에 평문 비밀번호 없음", "Sarang" not in html)
+key_path = os.path.join(APP, ".tenver_key")  # 비밀번호는 코드에 적지 않고 로컬 키 파일로 대조
+if os.path.exists(key_path):
+    key = open(key_path, encoding="utf-8").read().strip()
+    check("index.html에 평문 비밀번호 없음", bool(key) and key not in html)
 check("data.js가 gitignore에 있음", "data.js" in open(os.path.join(APP, ".gitignore"), encoding="utf-8").read())
 
 # 6-2. 신선도 카나리아 (제2호 반성문 시정 서약 ① — 유령 실행 방어)

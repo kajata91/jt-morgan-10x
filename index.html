@@ -307,6 +307,7 @@
       <a href="#/portfolio" data-pg="portfolio">MY PORTFOLIO</a>
       <a href="#/wisdom" data-pg="wisdom">WISDOM <span class="newtag">NEW</span></a>
       <a href="#/reflection" data-pg="reflection">REFLECTION <span class="newtag">NEW</span></a>
+      <a href="#/hunters" data-pg="hunters">HUNTERS <span class="newtag">NEW</span></a>
     </nav>
     <div class="navtitle">SYSTEM</div>
     <nav class="nav">
@@ -497,6 +498,18 @@
         <h2>REFLECTION <span class="fn">NEW</span> <span class="clickhint">— 텐버의 주간 반성문</span></h2>
         <div class="desc">매주 주말, 텐버가 자신의 판단·실수·성과를 냉정하게 복기합니다. 같은 실수를 반복하지 않는 것 — 그것이 이 카드의 존재 이유입니다</div>
         <div id="reflectionBody"></div>
+      </div>
+    </div>
+    </section>
+
+    <section class="page" id="pg-hunters">
+    <div class="row">
+      <div class="card" id="hunters">
+        <h2>HUNTERS <span class="fn">NEW</span> <span class="clickhint">— 텐버 헌터스 당일매매 트레이더 10인</span></h2>
+        <div class="desc" id="htAsOf">트레이더 1인 10만원 · 09:10 사냥 시작 · 15:15 전량 청산 · 목표 일간 순이익 +2% 초과 · 매일 장 마감 후 정산 반영</div>
+        <div id="htKpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
+        <div class="tablewrap"><table style="min-width:720px"><thead><tr><th>#</th><th>트레이더</th><th>상태</th><th>자본</th><th>누적</th><th>최근일</th><th>20일 승률</th><th>목표 달성</th><th>손실일</th></tr></thead><tbody id="htBody"></tbody></table></div>
+        <div class="mynote">※ 퇴출 기준: 수습 10거래일 이후 5연속 손실 · 최근 20일 중 손실 13일 이상 · 자본 고점 대비 -20%. 퇴출 자금은 그 시점 누적수익률 1위에게 전액 이전됩니다. 가상매매 8주 후 실전 전환 — 투자 권유가 아닙니다.</div>
       </div>
     </div>
     </section>
@@ -1236,6 +1249,35 @@
     });
   }
 
+  // ---- HUNTERS (tenver-core/hunters 정산 요약 — 암호문에 함께 실려 온다) ----
+  function renderHunters() {
+    const H = window.HUNTERS_DATA;
+    const body = document.getElementById("htBody");
+    if (!H) { body.innerHTML = `<tr><td colspan="9" style="color:var(--muted)">헌터스 정산 데이터 준비 중 — 첫 정산 후 표시됩니다.</td></tr>`; return; }
+    const pct = v => v == null ? "—" : `<span class="${v > 0 ? "up" : v < 0 ? "down" : "flat"}">${v > 0 ? "+" : ""}${v.toFixed(2)}%</span>`;
+    const act = H.traders.filter(t => t.status === "active");
+    const total = H.traders.reduce((s, t) => s + t.equity, 0) + (H.reserve || 0);
+    const cum = (total / H.start_capital - 1) * 100;
+    const modeTxt = { paper: "가상매매", mock: "키움 모의투자", live: "실전" }[H.mode] || H.mode;
+    document.getElementById("htAsOf").textContent += ` · 최종 정산 ${H.updated}`;
+    const kpi = (lab, val) => `<div style="background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px"><div style="font-size:10.5px;color:var(--muted)">${lab}</div><div style="font-size:16px;font-weight:700;margin-top:3px">${val}</div></div>`;
+    document.getElementById("htKpis").innerHTML =
+      kpi("총자본", won(Math.round(total))) + kpi("누적 수익률", pct(cum)) +
+      kpi("가동 트레이더", `${act.length} / ${H.traders.length}명`) + kpi("운용 모드", modeTxt) + kpi("일간 목표", `+${H.target_pct}% 초과`);
+    const rows = [...H.traders].sort((a, b) => (a.status !== b.status ? (a.status === "active" ? -1 : 1) : b.cum_pct - a.cum_pct));
+    body.innerHTML = rows.map((t, i) => {
+      const st = t.status === "active"
+        ? `<span class="badge b-high">가동</span>${t.yellow ? ` <span class="badge b-mid">옐로카드</span>` : ""}`
+        : `<span class="badge" style="background:rgba(248,113,113,.12);color:var(--red)" title="${t.retire_reason || ""}">퇴출 ${t.retired_on || ""}</span>`;
+      return `<tr><td class="num">${t.status === "active" ? i + 1 : "—"}</td>
+        <td class="stock" style="font-size:12px">${t.id} ${t.name}<br><span class="code">${t.inspired_by} 스타일</span></td>
+        <td>${st}</td><td class="num">${won(t.equity)}</td><td class="num">${pct(t.cum_pct)}</td>
+        <td class="num">${t.last ? pct(t.last.pnl_pct) : "—"}</td>
+        <td class="num">${t.win20 == null ? "—" : t.win20 + "%"}</td>
+        <td class="num">${t.hit_days} / ${t.days}일</td><td class="num">${t.loss_days}일</td></tr>`;
+    }).join("");
+  }
+
   // ---- MY PORTFOLIO 기간 증감 (접속일 스냅샷 축적) ----
   const PH_KEY = "tenver_port_history_v1";
   function renderPortPeriods(list) {
@@ -1261,10 +1303,10 @@
       `<span style="color:var(--muted);font-size:10px">접속일 평가액 스냅샷 기준 · 기록 ${dates.length}일 — 매일 접속할수록 정밀해집니다</span>`;
   }
 
-  renderConsult(); renderTopguns(); renderWisdom(); renderReflection();
+  renderConsult(); renderTopguns(); renderWisdom(); renderReflection(); renderHunters();
 
   // ---- 페이지 라우터 (해시 기반 — 메뉴 클릭 시 독립 화면 전환, 뒤로가기 지원) ----
-  const PAGES = ["dash", "consult", "topguns", "portfolio", "wisdom", "reflection"];
+  const PAGES = ["dash", "consult", "topguns", "portfolio", "wisdom", "reflection", "hunters"];
   function route() {
     const h = (location.hash || "").replace(/^#\/?/, "") || "dash";
     const pg = PAGES.includes(h) ? h : "dash";

@@ -23,6 +23,11 @@ def main():
         print("ERROR: 비밀번호는 8자 이상이어야 합니다.", file=sys.stderr); sys.exit(1)
     src = os.path.join(SRC_DIR, "data.js")
     plaintext = open(src, encoding="utf-8").read().encode("utf-8")
+    # 헌터스(tenver-core/hunters) 정산 요약이 있으면 같은 암호문에 싣는다 → 대시보드 HUNTERS 탭
+    hunters = os.path.join(SRC_DIR, "hunters.json")
+    if os.path.exists(hunters):
+        h = json.load(open(hunters, encoding="utf-8"))
+        plaintext += ("\nwindow.HUNTERS_DATA = " + json.dumps(h, ensure_ascii=False) + ";\n").encode("utf-8")
 
     salt = secrets.token_bytes(16)
     iv = secrets.token_bytes(12)

@@ -104,7 +104,7 @@ except Exception as e:
 
 # 6. index.html 정합 — 페이퍼 뷰어·라우터·게이트 핵심 앵커 존재
 html = open(os.path.join(APP, "index.html"), encoding="utf-8").read()
-for anchor in ["renderPaper", "paperSheet", "mPdf", "@media print", "gatePass", 'id="pg-consult"']:
+for anchor in ["renderPaper", "paperSheet", "mPdf", "@media print", "gatePass", 'id="pg-consult"', 'id="pg-hunters"']:
     check(f"index.html 앵커 '{anchor}'", anchor in html)
 key_path = os.path.join(KEY_DIR, ".tenver_key")  # 비밀번호는 코드에 적지 않고 로컬 키 파일로 대조
 if os.path.exists(key_path):
